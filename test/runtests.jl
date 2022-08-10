@@ -2,5 +2,5 @@ using SyntheticPowerGrids
 using Test
 
 @testset "SyntheticPowerGrids.jl" begin
-    # Write your tests here.
+    random_PD_grid(10)
 end
