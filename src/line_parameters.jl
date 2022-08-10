@@ -11,7 +11,7 @@ function impedance_380kV(length)
     return Z
 end
 
-function generate_line_admittance_matrix(g::EmbeddedGraph{Int64}, mean_len_km = 42.872746445497626, shortest_line_km = 0.06)
+function get_line_admittance_matrix(g::EmbeddedGraph{Int64}, mean_len_km = 42.872746445497626, shortest_line_km = 0.06)
     dist_nodes = EmbeddedGraphs.weights(g) # Euclidean distance of the edges in EmbeddedGraphs
 
     # Remove all "unconnected" distances!

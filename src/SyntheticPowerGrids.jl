@@ -9,6 +9,10 @@ module SyntheticPowerGrids
     using NetworkDynamics
     using LinearAlgebra
     using ForwardDiff
+    using Parameters
+
+    include("pg_struct.jl")
+    export PGGeneration2
 
     include("line_parameters.jl")
 
@@ -20,4 +24,10 @@ module SyntheticPowerGrids
     include("tests.jl")
 
     include("utils.jl")
+
+    include("power_distribution.jl")
+
+    include("line_dynamics.jl")
+    
+    include("nodal_dynamics.jl")
 end
