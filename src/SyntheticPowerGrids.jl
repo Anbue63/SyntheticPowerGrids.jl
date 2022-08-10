@@ -12,7 +12,7 @@ module SyntheticPowerGrids
     using Parameters
 
     include("pg_struct.jl")
-    export PGGeneration2
+    export PGGeneration3
 
     include("line_parameters.jl")
 

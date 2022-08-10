@@ -1,4 +1,4 @@
-@with_kw struct PGGeneration2
+@with_kw struct PGGeneration3
     P_base::Float64 = 400 * 10^6
     V_base::Float64 = 380 * 10^3
     loads::Symbol = :PQ
@@ -7,13 +7,14 @@
     power_distribution::Symbol = :Bimodal
     maxiters::Int64 = 1000
     P0::Float64 = 1.0
+    V_ref::Float64 = 1.0
     tests::Bool = true
     SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0]
     num_nodes::Int64
     nodal_parameters::Dict
 end
 
-function test_struct(pg_struct::PGGeneration2)
+function test_struct(pg_struct::PGGeneration3)
     if pg_struct.V_base != 380 * 10^3
         error("This voltage level is not supported. Please use V_base = 380 * 10^3 instead.")
     end

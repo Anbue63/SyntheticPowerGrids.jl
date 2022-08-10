@@ -3,8 +3,8 @@
 
 Generates a random power grid using SyntheticNetworks and then turns it into a PowerDynamics.PowerGrid type.
 """
-function random_PD_grid(pg_struct::PGGeneration2; τ_Q = 8.0, K_P = 5, K_Q = 0.1)
-    test_struct(pg_struct) # Test if all options given by the user are valid
+function random_PD_grid(pg_struct::PGGeneration3)
+    test_struct(pg_struct) # Test if options given by the user are valid
 
     # Accessing the data from the struct
     N = pg_struct.num_nodes                              # Number of nodes
@@ -31,13 +31,13 @@ function random_PD_grid(pg_struct::PGGeneration2; τ_Q = 8.0, K_P = 5, K_Q = 0.1
         ic_guess = get_initial_guess(rpg, op_ancillary)                # Initial guess for rootfind
         op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) #, solve_powerflow = true) # find operation point of the full power grid
 
-        if test_power_grid(pg, op) == true
+        if pg_struct.tests == true              # Sanity checks before returning
+            if test_power_grid(pg, op) == true
+                return pg, op, rejections
+            end
+        else
             return pg, op, rejections
         end
         rejections += 1
     end
 end 
-
-
-
-
