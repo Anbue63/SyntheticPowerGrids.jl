@@ -13,6 +13,8 @@ function get_nodes(pg, op_ancillary, pg_struct)
     end
     if pg_struct.loads == :PQ
         nodes = get_nodes_PQ(pg, op_ancillary, nodes, α)
+    elseif pg_struct.loads == :ExponentialRecovery
+        nodes = get_nodes_ExponentialRecovery(pg, op_ancillary, nodes, pg_struct, α)
     end
     nodes[end] = SlackAlgebraic(U = complex(pg_struct.V_ref))
     return nodes
@@ -41,6 +43,25 @@ function get_nodes_PQ(pg, op_ancillary, nodes, α)
     for n in 1:nv(pg.graph)
         if α[n] < 0.5 # Grid following / loads
             nodes[n] = PQAlgebraic(P = op_ancillary[n, :p], Q = op_ancillary[n, :q]) 
+        end
+    end
+    return nodes
+end
+
+function get_nodes_ExponentialRecovery(pg, op_ancillary, nodes, pg_struct, α)
+    nodal_parameters = pg_struct.nodal_parameters 
+
+    Nps = nodal_parameters[:Nps] # Steady-state load voltage dependence p-axis [pu]
+    Npt = nodal_parameters[:Npt] # Transient load voltage dependence p-axis [pu]
+    Nqs = nodal_parameters[:Nqs] # Steady-state load voltage dependence q-axis [pu]
+    Nqt = nodal_parameters[:Nqt] # Transient load voltage dependence q-axis [pu]
+    Tp = nodal_parameters[:Tp]   # Load recovery constant p-axis [s]
+    Tq = nodal_parameters[:Tq]   # Load recovery constant q-axis [s]
+    V0 = nodal_parameters[:V0]   # Reference grid voltage [pu]
+ 
+    for n in 1:nv(pg.graph)
+        if α[n] < 0.5 # Grid following / loads
+            nodes[n] = ExponentialRecoveryLoad(P0 = op_ancillary[n, :p], Q0 = op_ancillary[n, :p], Nps = Nps, Npt = Npt, Nqs = Nqs, Nqt = Nqt, Tp = Tp, Tq = Tq, V0 = V0)
         end
     end
     return nodes

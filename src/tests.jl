@@ -60,7 +60,7 @@ Checks if all voltage magnitude are close to the correct operation voltage magni
 """
 function test_voltage(op)
     V = op[:, :v] # Voltage magnitudes in the operation point
-    if all(isapprox.(V, 1.0))
+    if all(isapprox.(V, 1.0, atol = 0.1))
         return true
     else 
         println("The voltage conditions for the power grid could not be met.")

@@ -23,8 +23,8 @@ function test_struct(pg_struct::PGGeneration3)
         error("This fluctuation process is not supported. Please use fluctuations = :off instead.")
     end
 
-    if pg_struct.loads != :PQ
-        error("This option for the loads is not supported. Please use loads = :PQ instead.")
+    if pg_struct.loads != :PQ && pg_struct.loads != :ExponentialRecovery
+        error("This option for the loads is not supported. Please use loads = :PQ or :ExponentialRecovery instead.")
     end
 
     if pg_struct.power_distribution != :Bimodal
