@@ -1,7 +1,7 @@
-@with_kw struct PGGeneration3
+@with_kw struct PGGeneration
     P_base::Float64 = 400 * 10^6
     V_base::Float64 = 380 * 10^3
-    loads::Symbol = :PQ
+    loads::Symbol = :PQAlgebraic
     fluctuations::Symbol = :off
     generation_dynamics::Symbol = :SchifferApprox
     power_distribution::Symbol = :Bimodal
@@ -14,7 +14,7 @@
     nodal_parameters::Dict
 end
 
-function test_struct(pg_struct::PGGeneration3)
+function test_struct(pg_struct::PGGeneration)
     if pg_struct.V_base != 380 * 10^3
         error("This voltage level is not supported. Please use V_base = 380 * 10^3 instead.")
     end
@@ -23,8 +23,8 @@ function test_struct(pg_struct::PGGeneration3)
         error("This fluctuation process is not supported. Please use fluctuations = :off instead.")
     end
 
-    if pg_struct.loads != :PQ && pg_struct.loads != :ExponentialRecovery
-        error("This option for the loads is not supported. Please use loads = :PQ or :ExponentialRecovery instead.")
+    if pg_struct.loads != :PQAlgebraic && pg_struct.loads != :ExponentialRecovery && pg_struct.loads != :PQDynamic
+        error("This option for the loads is not supported. Please use loads = :PQAlgebraic or :PQDynamic or :ExponentialRecovery instead.")
     end
 
     if pg_struct.power_distribution != :Bimodal

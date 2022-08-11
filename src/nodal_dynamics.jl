@@ -11,10 +11,13 @@ function get_nodes(pg, op_ancillary, pg_struct)
     if pg_struct.generation_dynamics == :SchifferApprox 
         nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, α)
     end
-    if pg_struct.loads == :PQ
+    if pg_struct.loads == :PQAlgebraic
         nodes = get_nodes_PQ(pg, op_ancillary, nodes, α)
     elseif pg_struct.loads == :ExponentialRecovery
         nodes = get_nodes_ExponentialRecovery(pg, op_ancillary, nodes, pg_struct, α)
+
+    elseif pg_struct.loads == :PQDynamic
+        nodes = get_nodes_PQDynamic(pg, op_ancillary, nodes, pg_struct, α)
     end
     nodes[end] = SlackAlgebraic(U = complex(pg_struct.V_ref))
     return nodes
@@ -28,12 +31,37 @@ function get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, α)
     V_r = nodal_parameters[:V_r] # Reference voltage magnitude. In [p.u.] systems the default is V_r = 1.0
     K_P = nodal_parameters[:K_P] # Gain constant low pass filter measuring the active power
     K_Q = nodal_parameters[:K_Q] # Gain constant low pass filter measuring the reactive power
-
+    
     for n in 1:nv(pg.graph)
         if α[n] > 0.5 # Grid Forming
             β = rand(1:length(nodal_parameters[:τ_P])) # Randomly chooses one of three possible time constant for the low pass filter measuring the active power
             τ_P_node = τ_P[β]
-            nodes[n] = SchifferApprox(τ_P = τ_P_node, τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, P = op_ancillary[n, :p], Q = op_ancillary[n, :q], Y_n = 0)
+            Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = parameter_schiffer(P_set = op_ancillary[n, :p], Q_set = op_ancillary[n, :q], τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, τ_P = τ_P_node)
+            nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ)
+
+            #nodes[n] = SchifferApprox(τ_P = τ_P_node, τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, P = op_ancillary[n, :p], Q = op_ancillary[n, :q], Y_n = 0)
+        end
+    end
+    return nodes
+end
+
+function get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, α)
+    nodal_parameters = pg_struct.nodal_parameters
+
+    τ_P = nodal_parameters[:τ_P] # Time constant low pass filter measuring the active power
+    τ_Q = nodal_parameters[:τ_Q] # Time constant low pass filter measuring the reactive power
+    V_r = nodal_parameters[:V_r] # Reference voltage magnitude. In [p.u.] systems the default is V_r = 1.0
+    K_P = nodal_parameters[:K_P] # Gain constant low pass filter measuring the active power
+    K_Q = nodal_parameters[:K_Q] # Gain constant low pass filter measuring the reactive power
+    
+    for n in 1:nv(pg.graph)
+        if α[n] > 0.5 # Grid Forming
+            β = rand(1:length(nodal_parameters[:τ_P])) # Randomly chooses one of three possible time constant for the low pass filter measuring the active power
+            τ_P_node = τ_P[β]
+            Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = parameter_schiffer(P_set = op_ancillary[n, :p], Q_set = op_ancillary[n, :q], τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, τ_P = τ_P_node)
+            nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ)
+
+            #nodes[n] = SchifferApprox(τ_P = τ_P_node, τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, P = op_ancillary[n, :p], Q = op_ancillary[n, :q], Y_n = 0)
         end
     end
     return nodes
@@ -62,6 +90,18 @@ function get_nodes_ExponentialRecovery(pg, op_ancillary, nodes, pg_struct, α)
     for n in 1:nv(pg.graph)
         if α[n] < 0.5 # Grid following / loads
             nodes[n] = ExponentialRecoveryLoad(P0 = op_ancillary[n, :p], Q0 = op_ancillary[n, :p], Nps = Nps, Npt = Npt, Nqs = Nqs, Nqt = Nqt, Tp = Tp, Tq = Tq, V0 = V0)
+        end
+    end
+    return nodes
+end
+
+function get_nodes_PQDynamic(pg, op_ancillary, nodes, pg_struct, α)
+    nodal_parameters = pg_struct.nodal_parameters 
+    τ = nodal_parameters[:τ] # Time constant
+ 
+    for n in 1:nv(pg.graph)
+        if α[n] < 0.5 # Grid following / loads
+            nodes[n] = PQDynamic(P_0 = op_ancillary[n, :p], Q_0 = op_ancillary[n, :p], τ = τ)
         end
     end
     return nodes

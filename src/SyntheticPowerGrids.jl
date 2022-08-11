@@ -12,11 +12,15 @@ module SyntheticPowerGrids
     using Parameters
 
     include("pg_struct.jl")
-    export PGGeneration3
+    export PGGeneration
 
+    include("dynamic_load.jl")
+    export PQDynamic
+    
     include("line_parameters.jl")
 
     include("PhaseAmplitudeOscillator.jl")
+    export parameter_schiffer
 
     include("pg_generation.jl")
     export random_PD_grid
