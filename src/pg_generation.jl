@@ -19,9 +19,9 @@ function random_PD_grid(pg_struct::PGGeneration)
         P_vec = rand(power_dist, N - 1) # Power Generation / Consumption of the nodes
         P_vec .-= sum(P_vec) / (N - 1)  # Assure power balance
 
-        Y = get_line_admittance_matrix(pg) # Line admittance matrix, Entry's are in Ohm
+        Y, Y_shunt = get_line_admittance_matrix(pg) # Line admittance matrix and Shunts, Entry's are in Ohm
                 
-        lines = get_lines(pg, Y, Y_base)                     # Line dynamics
+        lines = get_lines(pg, pg_struct, Y, Y_shunt, Y_base) # Line dynamics
         op_ancillary = get_ancillary_grid(pg, P_vec, lines)  # Operation point of Ancillary power grid
         nodes = get_nodes(pg, op_ancillary, pg_struct)       # Nodal dynamics
 
@@ -32,7 +32,7 @@ function random_PD_grid(pg_struct::PGGeneration)
         op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) #, solve_powerflow = true) # find operation point of the full power grid
 
         if pg_struct.tests == true              # Sanity checks before returning
-            if test_power_grid(pg, op) == true
+            if test_power_grid(pg, op, pg_struct) == true
                 return pg, op, rejections
             end
         else

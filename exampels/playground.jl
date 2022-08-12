@@ -5,6 +5,6 @@ using SyntheticPowerGrids
 
 nodal_parameters = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0])
 
-a = PGGeneration(num_nodes = 20, nodal_parameters = nodal_parameters, loads = :PQAlgebraic)
+a = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters, loads = :PQAlgebraic, lines = :PiModelLine)
 
 pg, op, rejections = random_PD_grid(a)

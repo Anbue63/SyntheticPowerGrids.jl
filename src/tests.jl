@@ -3,18 +3,19 @@
 
 Performs a variety of test to assure that the dynamical system can represent a meaningful power grid.
 """
-function test_power_grid(pg, op)
-    if test_voltage(op) == true                     # Voltage magnitudes in the operation point
-        if test_power_flow_on_lines(op) == true     # Power flow on the lines
-            _, stable = test_eigenvalues(pg, op)    # Operation point is linearly stable
+function test_power_grid(pg, op, pg_struct)
+    if test_voltage(op) == true                             # Voltage magnitudes in the operation point
+        if test_power_flow_on_lines(op, pg_struct) == true  # Power flow on the lines
+            _, stable = test_eigenvalues(pg, op)            # Operation point is linearly stable
             if stable == true
-                if test_slack_bus(pg, op) == true   # Power consumption of the slack bus
-                    return true                     # All test have been passed. The power grid can be returned
+                if test_slack_bus(pg, op) == true           # Power consumption of the slack bus
+                    return true                             # All test have been passed. The power grid can be returned
                 end
             end
         end
     end
-    println("Restart power grid generation algorithm.")
+    println("Restarting power grid generation algorithm.")
+    println("")
     return false
 end
 
@@ -23,7 +24,7 @@ end
 
 Calculates the power flow on the transmission lines of a grid. Checks if it is below the threshold of 70% of the physical limit.
 """
-function test_power_flow_on_lines(state::State)
+function test_power_flow_on_lines(state::State, pg_struct)
     lines = state.grid.lines
     save_flow = Vector{Bool}(undef, length(lines))
 
@@ -32,8 +33,14 @@ function test_power_flow_on_lines(state::State)
         m = l.from
         k = l.to
         
-        g_mk = real(l.Y) # Line Conductance
-        b_mk = imag(l.Y) # Line Susceptance
+        if pg_struct.lines == :StaticLine
+            g_mk = real(l.Y) # Line Conductance
+            b_mk = imag(l.Y) # Line Susceptance
+            
+        elseif pg_struct.lines == :PiModelLine
+            g_mk = real(l.y) # Line Conductance
+            b_mk = imag(l.y) # Line Susceptance
+        end
 
         v_m = state[m, :v]  # Voltage magnitude node m 
         v_k = state[k, :v]  # Voltage magnitude node k
