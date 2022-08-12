@@ -87,9 +87,7 @@ function construct_vertex(nf::NormalForm)
         dx[3] = real(dω)
         return nothing
     end
-
-    ODEVertex(f! = rhs!, dim = dim, mass_matrix = mass_matrix, sym = sym)
-
+    ODEVertex(rhs!, dim, mass_matrix, sym)
 end
 
 symbolsof(nf::NormalForm) = [:u_r, :u_i, :ω]

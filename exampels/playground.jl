@@ -1,8 +1,6 @@
 using Revise
 using SyntheticPowerGrids
 
-#nodal_parameters = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0], :Nps => 0.6603, :Npt => 3.2308, :Nqs => -2.2439, :Nqt => 18.3881, :Tp => 0.0135, :Tq => 0.1017, :V0 => 1.0)
-
 nodal_parameters_a = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0]) # This option recover the GNN dataset grids, please do not delete it
 nodal_parameters_b = Dict(:X => 1.0, :γ => 0.2, :α => 2.0) 
 nodal_parameters_c = Dict(:X => 1.0, :γ => 0.2, :α => 2.0, :τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0]) 
