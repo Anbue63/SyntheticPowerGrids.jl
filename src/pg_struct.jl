@@ -2,7 +2,7 @@
     P_base::Float64 = 400 * 10^6
     V_base::Float64 = 380 * 10^3
     loads::Symbol = :PQAlgebraic
-    lines::Symbol = :StaticLine
+    lines::Symbol = :PiModelLine
     fluctuations::Symbol = :off
     generation_dynamics::Symbol = :SchifferApprox
     power_distribution::Symbol = :Bimodal
@@ -32,8 +32,8 @@ function test_struct(pg_struct::PGGeneration)
         error("This option for the power distribution is not supported. Please use power_distribution = :Bimodal instead.")
     end
 
-    if pg_struct.generation_dynamics != :SchifferApprox
-        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox instead.")
+    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf
+        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox or :Schmietendorf instead.")
     end
 
     if pg_struct.lines != :StaticLine && pg_struct.lines != :PiModelLine

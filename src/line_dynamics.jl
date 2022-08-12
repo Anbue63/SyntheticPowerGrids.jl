@@ -27,7 +27,6 @@ function get_lines_static(pg, Y, Y_base)
         Y_pu = Y[from_vec[l], to_vec[l]] / Y_base # Convert admittance [ohm] to p.u. system
         lines[l] = StaticLine(from = from_vec[l], to = to_vec[l], Y = Y_pu) 
     end
-
     return lines
 end
 
@@ -43,6 +42,5 @@ function get_lines_Pi(pg, Y, Y_shunt, Y_base)
         Y_shunt_pu = Y_shunt[from_vec[l], to_vec[l]] / Y_base # Convert shunt admittance [ohm] to p.u. system
         lines[l] = PiModelLine(from = from_vec[l], to = to_vec[l], y = Y_pu, y_shunt_km = Y_shunt_pu, y_shunt_mk = Y_shunt_pu) 
     end
-
     return lines
 end

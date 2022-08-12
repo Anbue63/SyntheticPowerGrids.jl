@@ -1,10 +1,10 @@
 """
-    impedance_380kV(length, ω = 2π * 50)
+    line_properties_380kV(length, ω = 2π * 50)
 
 Tabelle 5.6 Standardfreileitungen in der 220-kV- und 380-kV-Ebene 
 https://www.dena.de/newsroom/publikationsdetailansicht/pub/dena-verteilnetzstudie-ausbau-und-innovationsbedarf-der-stromverteilnetze-in-deutschland-bis-2030/
 """
-function impedance_380kV(length, ω = 2π * 50)
+function line_properties_380kV(length, ω = 2π * 50)
     R = 0.025 * length
     X = 0.25  * length
     C_shunt = 13.7 * 10^-9 * length
@@ -32,9 +32,9 @@ function get_line_admittance_matrix(g::EmbeddedGraph{Int64}, mean_len_km = 42.87
             if dist_nodes[i, j] > 0 && dist_nodes[j, i] > 0 # If nodes are connected -> Calculate Admittance
                 len_line = dist_nodes[i,j] * dist_to_km     # Euclidean distance conversion to km
                 if len_line < shortest_line_km              # SyntheticNetworks can generate very short lines. We fix this by adding a threshold to the admittance. The shortest line length is taken from SciGrids
-                    impedance_line, shunt_admittance_line = impedance_380kV(shortest_line_km)  
+                    impedance_line, shunt_admittance_line = line_properties_380kV(shortest_line_km)  
                 else
-                    impedance_line, shunt_admittance_line = impedance_380kV(len_line)  # Total impedance of the line in Ohm
+                    impedance_line, shunt_admittance_line = line_properties_380kV(len_line)  # Total impedance of the line in Ohm
                 end
                 # Conversion to Admittance
                 Y[i, j] = 1 / impedance_line 

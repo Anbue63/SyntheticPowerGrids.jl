@@ -2,7 +2,7 @@ using NetworkDynamics: ODEVertex
 import PowerDynamics: dimension, symbolsof, construct_vertex 
 import PowerDynamics: showdefinition
 
-function parameter_schiffer(;P_set, Q_set, τ_P = 5.0, τ_Q = 8.0, K_P = 5.0, K_Q = 0.1, V_r = 1.0, Y_n = 0.0)
+function parameter_schiffer(;P_set, Q_set, τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
     Aᵤ = (V_r + 2 * K_Q * Q_set) / (2 * τ_Q * V_r)
     Bᵤ = 1im 
     Cᵤ = - 1 / (2 * τ_Q * V_r^2)
@@ -18,12 +18,12 @@ function parameter_schiffer(;P_set, Q_set, τ_P = 5.0, τ_Q = 8.0, K_P = 5.0, K_
     return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n]
 end
 
-function parameter_schmietendorf(;P_m, Y_n, E_f = 1.0, E_c = 1.0, X = 1.0, Q_c = 0, α = 2, γ = 0.2) 
-    Aᵤ = ((3E_f / 2E_c) - 1 + X * Q_c / (E_c)^2 ) / α
+function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n) 
+    Aᵤ = ((3E_f / 2E_set) - 1) / α
     Bᵤ = 1im 
-    Cᵤ = (- E_f / (2E_c^3) + X * Q_c / (E_c)^4 ) / α
+    Cᵤ = (- E_f / (2E_set^3)) / α
     Gᵤ = 0.0
-    Hᵤ = - X / (α * (E_c)^2)
+    Hᵤ = - X / (α * (E_set)^2)
     Mₓ = 1.0
     Aₓ = P_m 
     Bₓ = - γ
