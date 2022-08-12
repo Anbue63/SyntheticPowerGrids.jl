@@ -32,7 +32,7 @@ function test_struct(pg_struct::PGGeneration)
         error("This option for the power distribution is not supported. Please use power_distribution = :Bimodal instead.")
     end
 
-    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf
+    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf && pg_struct.generation_dynamics != :Mixed
         error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox or :Schmietendorf instead.")
     end
 
