@@ -80,34 +80,3 @@ function get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob)
     end
     return nodes
 end
-
-function get_nodes_ExponentialRecovery(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob)
-    nodal_parameters = pg_struct.nodal_parameters 
-
-    Nps = nodal_parameters[:Nps] # Steady-state load voltage dependence p-axis [pu]
-    Npt = nodal_parameters[:Npt] # Transient load voltage dependence p-axis [pu]
-    Nqs = nodal_parameters[:Nqs] # Steady-state load voltage dependence q-axis [pu]
-    Nqt = nodal_parameters[:Nqt] # Transient load voltage dependence q-axis [pu]
-    Tp = nodal_parameters[:Tp]   # Load recovery constant p-axis [s]
-    Tq = nodal_parameters[:Tq]   # Load recovery constant q-axis [s]
-    V0 = nodal_parameters[:V0]   # Reference grid voltage [pu]
- 
-    for n in 1:nv(pg.graph)
-        if nodal_dyn_prob[n] < 0.5 # Grid following / loads
-            nodes[n] = ExponentialRecoveryLoad(P0 = op_ancillary[n, :p], Q0 = op_ancillary[n, :p], Nps = Nps, Npt = Npt, Nqs = Nqs, Nqt = Nqt, Tp = Tp, Tq = Tq, V0 = V0)
-        end
-    end
-    return nodes
-end
-
-function get_nodes_PQDynamic(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob)
-    nodal_parameters = pg_struct.nodal_parameters 
-    τ = nodal_parameters[:τ] # Time constant
- 
-    for n in 1:nv(pg.graph)
-        if nodal_dyn_prob[n] < 0.5 # Grid following / loads
-            nodes[n] = PQDynamic(P_0 = op_ancillary[n, :p], Q_0 = op_ancillary[n, :p], τ = τ)
-        end
-    end
-    return nodes
-end
