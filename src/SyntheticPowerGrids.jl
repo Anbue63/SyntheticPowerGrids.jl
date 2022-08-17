@@ -18,7 +18,8 @@ module SyntheticPowerGrids
     export PQDynamic
     
     include("line_parameters.jl")
-
+    export get_line_lengths
+    
     include("PhaseAmplitudeOscillator.jl")
     export parameter_schiffer
 

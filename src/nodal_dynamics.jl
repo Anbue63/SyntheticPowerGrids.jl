@@ -8,21 +8,26 @@ get the nodal dynamics of the full power grid.
 function get_nodes(pg, op_ancillary, pg_struct)
     nodal_dyn_prob = rand(nv(pg.graph)) # Turns nodes into loads or PhaseAmplitudeOscillators
     nodes = Array{Any}(undef, nv(pg.graph))
+    
+    load_share = pg_struct.nodal_shares[:load_share]
+
     if pg_struct.generation_dynamics == :SchifferApprox 
-        nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [0.5, 1.0])
+        schiffer_share = pg_struct.nodal_shares[:schiffer_share]
+
+        nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + schiffer_share])
     elseif pg_struct.generation_dynamics == :Schmietendorf
-        nodes = get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [0.5, 1.0])
+        schmietendorf_share = pg_struct.nodal_shares[:schmietendorf_share]
+
+        nodes = get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + schmietendorf_share])
     elseif pg_struct.generation_dynamics == :Mixed
-        nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [0.5, 0.75])
-        nodes = get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [0.75, 1.0])
+        schmietendorf_share = pg_struct.nodal_shares[:schmietendorf_share]
+        schiffer_share = pg_struct.nodal_shares[:schiffer_share]
+
+        nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + schiffer_share])
+        nodes = get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share + schiffer_share, load_share + schiffer_share + schmietendorf_share])
     end
     if pg_struct.loads == :PQAlgebraic
-        nodes = get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob)
-    elseif pg_struct.loads == :ExponentialRecovery
-        nodes = get_nodes_ExponentialRecovery(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob)
-
-    elseif pg_struct.loads == :PQDynamic
-        nodes = get_nodes_PQDynamic(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob)
+        nodes = get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, load_share)
     end
     nodes[end] = SlackAlgebraic(U = complex(pg_struct.V_ref))
     return nodes
@@ -72,9 +77,9 @@ function get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_p
     return nodes
 end
 
-function get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob)
+function get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, threshold)
     for n in 1:nv(pg.graph)
-        if nodal_dyn_prob[n] < 0.5 # Grid following / loads
+        if nodal_dyn_prob[n] < threshold # Grid following / loads
             nodes[n] = PQAlgebraic(P = op_ancillary[n, :p], Q = op_ancillary[n, :q]) 
         end
     end
