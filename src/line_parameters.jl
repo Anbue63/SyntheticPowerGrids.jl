@@ -14,43 +14,39 @@ function line_properties_380kV(length, ω = 2π * 50)
 end
 
 """
-    get_line_admittance_matrix(L_matrix::Matrix{Float64})
+    get_line_admittance_matrix(g::EmbeddedGraph{Int64}, L_matrix::Matrix{Float64})
 
 Calculates the line admittances and the shunts with respect to the line length.
 """
-function get_line_admittance_matrix(L_matrix::Matrix{Float64})
+function get_line_admittance_matrix(g::EmbeddedGraph{Int64}, L_matrix::Matrix{Float64})
     N = size(L_matrix)[1]                     # Number of nodes
     Y = zeros(Complex{Float64}, N, N)         # Admittance Matrix
     Y_shunt = zeros(Complex{Float64}, N, N)   # Shunt Admittance Matrix
-    for i in 1:N
-        for j in 1:i-1
-            if L_matrix[i, j] > 0 && L_matrix[j, i] > 0 # If nodes are connected -> Calculate Admittance
-                impedance_line, shunt_admittance_line = line_properties_380kV(L_matrix[i, j])  # Total impedance of the line in Ohm
+    dest_vec = dst.(edges(g.graph))
+    source_vec = src.(edges(g.graph))
+
+    for i in eachindex(source_vec) # If nodes are connected -> Calculate Admittance
+        source = source_vec[i]
+        dest = dest_vec[i]
+
+        impedance_line, shunt_admittance_line = line_properties_380kV(L_matrix[source, dest])  # Total impedance of the line in Ohm
                 
-                # Conversion to Admittance
-                Y[i, j] = 1 / impedance_line 
-                Y[j, i] = 1 / impedance_line
+        # Conversion to Admittance
+        Y[source, dest] = 1 / impedance_line 
+        Y[dest, source] = 1 / impedance_line
 
-                Y_shunt[i, j] = shunt_admittance_line / 2 # Shunt is distributed: 1/2 at the beginning, 1/2 at end of the line
-                Y_shunt[j, i] = shunt_admittance_line / 2
-            else # Unconnected Edges don't need an admittance
-                Y[i, j] = 0 + 0im
-                Y[j, i] = 0 + 0im
-
-                Y_shunt[i, j] = 0 + 0im
-                Y_shunt[j, i] = 0 + 0im
-            end
-        end
+        Y_shunt[source, dest] = shunt_admittance_line / 2 # Shunt is distributed: 1/2 at the beginning, 1/2 at end of the line
+        Y_shunt[dest, source] = shunt_admittance_line / 2
     end
     return Y, Y_shunt
 end
 
 """
-    get_line_lengths(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
+    get_geographic_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
 
 Calculates the transmission line lengths in [km] from an embedded graph.
 """
-function get_line_lengths(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
+function get_geographic_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
     dist_nodes = EmbeddedGraphs.weights(g) # Euclidean distance of the edges in EmbeddedGraphs
 
     # Remove all "unconnected" distances!

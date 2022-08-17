@@ -15,7 +15,7 @@ c = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_c, loads =
 
 ##
 pg, op, embedded_graph, rejections = random_PD_grid(c)
-get_line_lengths(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
+get_geographic_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
 
 ##
 using OrdinaryDiffEq
