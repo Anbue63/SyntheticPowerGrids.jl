@@ -44,7 +44,7 @@ end
 """
     get_geographic_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
 
-Calculates the transmission line lengths in [km] from an embedded graph.
+Calculates the geographic distances in [km] from an embedded graph.
 """
 function get_geographic_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
     dist_nodes = EmbeddedGraphs.weights(g) # Euclidean distance of the edges in EmbeddedGraphs
