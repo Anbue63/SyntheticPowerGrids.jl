@@ -42,11 +42,11 @@ function get_line_admittance_matrix(g::EmbeddedGraph{Int64}, L_matrix::Matrix{Fl
 end
 
 """
-    get_geographic_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
+    get_effective_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
 
 Calculates the geographic distances in [km] from an embedded graph.
 """
-function get_geographic_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
+function get_effective_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
     dist_nodes = EmbeddedGraphs.weights(g) # Euclidean distance of the edges in EmbeddedGraphs
 
     # Remove all "unconnected" distances!

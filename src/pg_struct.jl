@@ -1,27 +1,24 @@
 @with_kw struct PGGeneration
-    P_base::Float64 = 400 * 10^6
-    V_base::Float64 = 380 * 10^3
-    loads::Symbol = :PQAlgebraic
-    lines::Symbol = :PiModelLine
-    fluctuations::Symbol = :off
-    generation_dynamics::Symbol = :SchifferApprox
-    power_distribution::Symbol = :Bimodal
-    maxiters::Int64 = 1000
-    P0::Float64 = 1.0
-    V_ref::Float64 = 1.0
-    tests::Bool = true
-    SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0]
-    shortest_line_km::Float64 = 0.06
-    mean_len_km::Float64 = 42.872746445497626
-    num_nodes::Int64
-    nodal_parameters::Dict
-    nodal_shares::Dict
+    P_base::Float64 = 100 * 10^6; @assert P_base > 0.0 "Base Power has to be positive."
+    V_base::Float64 = 380 * 10^3; @assert V_base > 0.0 "Base Voltage has to be positive."
+    loads::Symbol = :PQAlgebraic;
+    lines::Symbol = :PiModelLine;
+    fluctuations::Symbol = :off;
+    generation_dynamics::Symbol = :SchifferApprox;
+    power_distribution::Symbol = :Bimodal;
+    maxiters::Int64 = 1000; @assert maxiters > 0.0 "Maxiters has to be positive."
+    P0::Float64 = 1.31; @assert maxiters > 0.0 "Reference power for power distribution has to be positive."
+    V_ref::Float64 = 1.0; @assert V_ref > 0.0 "Reference voltage magnitude has to be positive."
+    validators::Bool = true;
+    SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0];
+    shortest_line_km::Float64 = 0.06; @assert mean_len_km >= 0.0 "The shortest line length has to be not be negative."
+    mean_len_km::Float64 = 42.872746445497626; @assert mean_len_km > 0.0 "The mean line length has to be bigger than 0.0."
+    num_nodes::Int64; @assert num_nodes > 0.0 "Number of nodes can not be negative."
+    nodal_parameters::Dict;
+    nodal_shares::Dict; @assert sum(values(nodal_shares)) == 1.0 "The sum of all nodal share has to equal 1.0!"
 end
 
-function test_struct(pg_struct::PGGeneration)
-    if sum(values(pg_struct.nodal_shares)) != 1.0    
-        error("The sum of all nodal share has to equal 1.0!")
-    end
+function validate_struct(pg_struct::PGGeneration)
     if pg_struct.V_base != 380 * 10^3
         error("This voltage level is not supported. Please use V_base = 380 * 10^3 instead.")
     end
@@ -82,7 +79,7 @@ function test_struct(pg_struct::PGGeneration)
         error("This option for the line dynamics is not supported. Please use lines = :StaticLine or :PiModelLine instead.")
     end
 
-    if pg_struct.tests == false
-        warning("The tests have been turned off. This option is not advised unless it is for debugging purposes.")
+    if pg_struct.validators == false
+        warning("The validators have been turned off. This option is not advised unless it is for debugging purposes.")
     end
 end

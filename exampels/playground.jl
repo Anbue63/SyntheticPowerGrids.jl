@@ -15,7 +15,7 @@ c = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_c, loads =
 
 ##
 pg, op, embedded_graph, rejections = random_PD_grid(c)
-get_geographic_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
+get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
 
 ##
 using OrdinaryDiffEq
@@ -30,7 +30,7 @@ x0 = copy(op)
 
 x0.vec[ω_idx[1]] = 1
 
-prob = ODEProblem(rpg, x0.vec, (0.0, 10.0), nothing)
+prob = ODEProblem(rpg, x0.vec, (0.0, 100.0), nothing)
 sol = solve(prob, Rodas4())
 
 plot(sol, idxs = ω_idx)

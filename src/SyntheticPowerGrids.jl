@@ -18,7 +18,7 @@ module SyntheticPowerGrids
     export PQDynamic
     
     include("line_parameters.jl")
-    export get_geographic_distances
+    export get_effective_distances
     
     include("PhaseAmplitudeOscillator.jl")
     export parameter_schiffer
@@ -26,7 +26,7 @@ module SyntheticPowerGrids
     include("pg_generation.jl")
     export random_PD_grid
 
-    include("tests.jl")
+    include("validators.jl")
 
     include("utils.jl")
 
