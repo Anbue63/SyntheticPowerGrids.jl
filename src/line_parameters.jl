@@ -74,3 +74,41 @@ function get_effective_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_
     end
     return L_matrix
 end
+
+"""
+    get_effective_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_line_km)
+
+Calculates the geographic distances in [km] from an embedded graph.
+"""
+function get_effective_distances(g::EmbeddedGraph{Int64}; mode_len_km, shortest_line_km)
+    dist_nodes = EmbeddedGraphs.weights(g) # Euclidean distance of the edges in EmbeddedGraphs
+
+    # Remove all "unconnected" distances!
+    dist_nodes_connected = vcat(dist_nodes...)
+    unconnected_idx = findall(iszero, dist_nodes_connected) # Unconnected nodes have a length of d = 0.0
+    deleteat!(dist_nodes_connected, unconnected_idx) 
+
+    dens_synthetic = kde(dist_nodes_connected)
+    dens_max_synthetic = findmax(dens_synthetic.density)
+    dist_nodes_mode = dens_synthetic.x[dens_max_synthetic[2]] # Most common length with respect to connected nodes (otherwise we skew the mean!)
+
+    #dist_nodes_mode = StatsBase.mode(dist_nodes_connected) 
+    dist_to_km = mode_len_km / dist_nodes_mode   # Conversion factor from euclidean distance to [km]
+    
+    N = nv(g) 
+    L_matrix = zeros(Float64, N, N)  # Line Length Matrix
+
+    for i in 1:N
+        for j in 1:i-1
+            len_line = dist_nodes[i,j] * dist_to_km # Euclidean distance conversion to km
+            if len_line < shortest_line_km          # SyntheticNetworks can generate very short lines. We fix this by adding a threshold to the admittance. The shortest line length is taken from SciGrids
+                L_matrix[i, j] = shortest_line_km
+                L_matrix[j, i] = shortest_line_km
+            else
+                L_matrix[i, j] = len_line
+                L_matrix[j, i] = len_line
+            end
+        end
+    end
+    return L_matrix
+end

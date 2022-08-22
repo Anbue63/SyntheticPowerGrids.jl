@@ -10,12 +10,10 @@ module SyntheticPowerGrids
     using LinearAlgebra
     using ForwardDiff
     using Parameters
+    using KernelDensity
 
     include("pg_struct.jl")
     export PGGeneration
-
-    include("dynamic_load.jl")
-    export PQDynamic
     
     include("line_parameters.jl")
     export get_effective_distances
