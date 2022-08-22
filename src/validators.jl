@@ -88,24 +88,27 @@ If the eigenvalues have positive real parts we classify the grid as unstable.
 - `eq_point`: Equilibrium point / fixed point of h. h(eq_point) = 0.0
 """
 function small_signal_stability_analysis(h::ODEFunction, eq_point, p = nothing)
+    M = h.mass_matrix
     h!(dx, x) = h(dx, x, p, 0.0)
-    
     j(x) = (dx = similar(x); ForwardDiff.jacobian(h!, dx, x)) # Jacobian
     J = j(eq_point) # Full Jacobian at the equilibrium point
 
-    c_idx, d_idx = separate_differential_constraint_eqs(h, p) # Constraint and differential indices 
+    if M == I # Constraint free system -> use eigenvalues of jacobian
+        λ = eigvals(J) .|> real |> extrema
+    else # Constraints -> Use eigenvalues of reduced jacobian
+        c_idx, d_idx = separate_differential_constraint_eqs(M, p) # Constraint and differential indices 
 
-    f_x = J[d_idx, d_idx] # Differential equations evaluated at the differential variables
-    f_y = J[d_idx, c_idx] # Differential equations evaluated at the constrained variables
+        f_x = J[d_idx, d_idx] # Differential equations evaluated at the differential variables
+        f_y = J[d_idx, c_idx] # Differential equations evaluated at the constrained variables
 
-    g_x = J[c_idx, d_idx] # Constrained equations evaluated at the differential variables
-    g_y = J[c_idx, c_idx] # Constrained equations evaluated at the constrained variables
+        g_x = J[c_idx, d_idx] # Constrained equations evaluated at the differential variables
+        g_y = J[c_idx, c_idx] # Constrained equations evaluated at the constrained variables
 
-    D = f_y * pinv(g_y) * g_x # Degradation matrix
-    A_s = f_x - D             # State matrix / Reduced Jacobian (eq. 7.16 in [1])
+        D = f_y * pinv(g_y) * g_x # Degradation matrix
+        A_s = f_x - D             # State matrix / Reduced Jacobian (eq. 7.16 in [1])
 
-    λ = eigvals(A_s) .|> real |> extrema # Eigenvalues of the state matrix
-
+        λ = eigvals(A_s) .|> real |> extrema # Eigenvalues of the reduced jacobian
+    end
     if all(λ .< 0.0)
         stable = true
     else
@@ -113,19 +116,17 @@ function small_signal_stability_analysis(h::ODEFunction, eq_point, p = nothing)
     end
 
     if stable == false
-        println("The eigenvalues of the reduced jacobian have positive real parts.")
+        println("The eigenvalues of the (reduced) jacobian have positive real parts.")
     end
-
     return stable
 end
 
 """
-    separate_differential_constraint_eqs(DAE::ODEFunction, p=nothing)
+    separate_differential_constraint_eqs(M, p=nothing)
 Returns the constraint equations and differential equations indices from an ODEFunction h(x) used in DifferentialEquations.jl.
 The ODE h must be in Mass Matrix form meaning: M ẋ = h(x), with M diagonal. h should be inplace.
 """
-function separate_differential_constraint_eqs(h::ODEFunction, p=nothing)
-    M = h.mass_matrix
+function separate_differential_constraint_eqs(M, p=nothing)
     M == I && error("There are no constraints in the system!")
     M != Diagonal(M) && error("The constraints are not diagonal.")
     
