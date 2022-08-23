@@ -12,7 +12,7 @@
     validators::Bool = true;
     SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0];
     shortest_line_km::Float64 = 0.06; @assert mean_len_km >= 0.0 "The shortest line length has to be not be negative."
-    mean_len_km::Float64 = 42.872746445497626; @assert mean_len_km > 0.0 "The mean line length has to be bigger than 0.0."
+    mean_len_km::Float64 = 37.12856121212121; @assert mean_len_km > 0.0 "The mean line length has to be bigger than 0.0."
     num_nodes::Int64; @assert num_nodes > 0.0 "Number of nodes can not be negative."
     nodal_parameters::Dict;
     nodal_shares::Dict; @assert sum(values(nodal_shares)) == 1.0 "The sum of all nodal share has to equal 1.0!"
