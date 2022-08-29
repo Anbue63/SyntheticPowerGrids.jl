@@ -24,12 +24,12 @@ function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n)
     Cᵤ = (- E_f / (2E_set^3)) / α
     Gᵤ = 0.0
     Hᵤ = - X / (α * (E_set)^2)
-    Mₓ = 1.0
     Aₓ = P_m 
     Bₓ = - γ
     Cₓ = 0.0 
     Gₓ = -1
     Hₓ = 0
+    Mₓ = 1.0
 
     return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n]
 end
