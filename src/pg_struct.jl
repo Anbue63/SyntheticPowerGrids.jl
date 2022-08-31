@@ -37,8 +37,8 @@ function validate_struct(pg_struct::PGGeneration3)
         error("This option for the coupling is not supported. Please use coupling = :line_lengths or :homogenous instead.")
     end
 
-    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf && pg_struct.generation_dynamics != :Mixed
-        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox or :Schmietendorf or :Mixed instead.")
+    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf && pg_struct.generation_dynamics != :Mixed  && pg_struct.generation_dynamics != :SwingEqLVS #&& pg_struct.generation_dynamics != :SwingEq
+        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox, :Schmietendorf, :SwingEqLVS, :SwingEq or :Mixed instead.")
     end
 
     try 
@@ -82,6 +82,6 @@ function validate_struct(pg_struct::PGGeneration3)
     end
 
     if pg_struct.validators == false
-        warning("The validators have been turned off. This option is not advised unless it is for debugging purposes.")
+       @warn "The validators have been turned off. This option is not advised unless it is for debugging purposes."
     end
 end

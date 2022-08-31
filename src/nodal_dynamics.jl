@@ -25,6 +25,14 @@ function get_nodes(pg, op_ancillary, pg_struct)
 
         nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + schiffer_share])
         nodes = get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share + schiffer_share, load_share + schiffer_share + schmietendorf_share])
+    elseif pg_struct.generation_dynamics == :SwingEqLVS
+        swingLVS_share =  pg_struct.nodal_shares[:swingLVS_share]
+
+        nodes = get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + swingLVS_share])
+    #elseif pg_struct.generation_dynamics == :SwingEq
+    #    swing_share =  pg_struct.nodal_shares[:swing_share]
+    
+    #    nodes = get_nodes_swing(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + swing_share])
     end
     if pg_struct.loads == :PQAlgebraic
         nodes = get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, load_share)
@@ -88,3 +96,41 @@ function get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, threshold)
     end
     return nodes
 end
+
+function get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+    nodal_parameters = pg_struct.nodal_parameters
+
+    H = nodal_parameters[:H] # Inertia Constant
+    Ω = nodal_parameters[:Ω] # Rated Frequency
+    V = nodal_parameters[:V] # Reference Voltage, typically 1 [p.u.]
+    D = nodal_parameters[:D] # Damping Coefficient
+    Γ = nodal_parameters[:Γ] # Voltage stability Coefficient
+
+    for n in 1:nv(pg.graph)
+        if nodal_dyn_prob[n] > threshold[1]
+            if threshold[2] >= nodal_dyn_prob[n] 
+                nodes[n] = SwingEqLVS(H = H, P = op_ancillary[n, :p], D = D, Ω = Ω, Γ = Γ, V = V)
+            end
+        end
+    end
+    return nodes
+end
+
+
+#=
+function get_nodes_swing(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+    nodal_parameters = pg_struct.nodal_parameters
+    H = nodal_parameters[:H] # Inertia Constant
+    Ω = nodal_parameters[:Ω] # Rated Frequency
+    D = nodal_parameters[:D] # Damping Coefficient
+    
+    for n in 1:nv(pg.graph)
+        if nodal_dyn_prob[n] > threshold[1]
+            if threshold[2] >= nodal_dyn_prob[n] 
+                nodes[n] = SwingEq(H = H, P = op_ancillary[n, :p], D = D, Ω = Ω)
+            end
+        end
+    end
+    return nodes
+end
+=#
