@@ -29,7 +29,10 @@ function get_nodes(pg, op_ancillary, pg_struct)
     if pg_struct.loads == :PQAlgebraic
         nodes = get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, load_share)
     end
-    nodes[end] = SlackAlgebraic(U = complex(pg_struct.V_ref))
+
+    if pg_struct.slack == true
+        nodes[end] = SlackAlgebraic(U = complex(pg_struct.V_ref))
+    end
     return nodes
 end
 

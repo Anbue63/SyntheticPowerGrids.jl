@@ -9,8 +9,12 @@ function validate_power_grid(pg, op, pg_struct)
             #stable = test_eigenvalues(pg, op)             
             stable = small_signal_stability_analysis(rhs(pg), op.vec) # Operation point is linearly stable
             if stable == true 
-                if validate_slack_bus_power(pg, op) == true           # Power consumption of the slack bus
-                    return true                             # All test have been passed. The power grid can be returned
+                if pg_struct.slack == true
+                    if validate_slack_bus_power(pg, op) == true           # Power consumption of the slack bus
+                        return true                             # All test have been passed. The power grid can be returned
+                    end
+                else
+                    return true 
                 end
             end
         end

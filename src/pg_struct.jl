@@ -16,6 +16,7 @@
     num_nodes::Int64; @assert num_nodes > 0.0 "Number of nodes can not be negative."
     nodal_parameters::Dict;
     nodal_shares::Dict; @assert sum(values(nodal_shares)) == 1.0 "The sum of all nodal share has to equal 1.0!"
+    slack::Bool = true
 end
 
 function validate_struct(pg_struct::PGGeneration)
