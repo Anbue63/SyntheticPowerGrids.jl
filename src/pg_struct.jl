@@ -29,8 +29,18 @@ function validate_struct(pg_struct::PGGeneration)
         error("This option for the loads is not supported. Please use loads = :PQAlgebraic instead.")
     end
 
-    if pg_struct.power_distribution != :Bimodal
-        error("This option for the power distribution is not supported. Please use power_distribution = :Bimodal instead.")
+    if pg_struct.power_distribution != :Bimodal && pg_struct.power_distribution != :Plus_Minus_1
+        error("This option for the power distribution is not supported. Please use power_distribution = :Bimodal or :Plus_Minus_1 instead.")
+    end
+
+    if pg_struct.power_distribution == :Plus_Minus_1
+        if isodd(pg_struct.num_nodes)
+            error("If you use the +/-1 Power Distribution you have to use an even number of nodes.")
+        end
+        
+        if pg_struct.slack == true
+            error("If you use the +/-1 Power Distribution you can not use a slack.")
+        end
     end
 
     if pg_struct.coupling != :line_lengths && pg_struct.coupling != :homogenous

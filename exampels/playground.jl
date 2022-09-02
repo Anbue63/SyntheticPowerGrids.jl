@@ -15,7 +15,7 @@ edge_parameters = Dict(:K => -10im)
 a = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_a, loads = :PQAlgebraic, lines = :StaticLine, nodal_shares = nodal_shares_a)
 b = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_b, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :Schmietendorf, nodal_shares = nodal_shares_b)
 c = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_c, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :Mixed, nodal_shares = nodal_shares_c)
-d = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_d, loads = :PQAlgebraic, lines = :StaticLine, generation_dynamics = :SwingEqLVS, coupling = :homogenous, edge_parameters = edge_parameters, nodal_shares = nodal_shares_d, slack = false)
+d = PGGeneration(num_nodes = 100, power_distribution = :Plus_Minus_1, nodal_parameters = nodal_parameters_d, loads = :PQAlgebraic, lines = :StaticLine, generation_dynamics = :SwingEqLVS, coupling = :homogenous, edge_parameters = edge_parameters, nodal_shares = nodal_shares_d, slack = false)
 
 ##
 pg, op, embedded_graph, rejections = random_PD_grid(d)
