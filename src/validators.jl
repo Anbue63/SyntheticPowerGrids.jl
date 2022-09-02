@@ -127,6 +127,7 @@ end
 
 """
     separate_differential_constraint_eqs(M, p=nothing)
+    
 Returns the constraint equations and differential equations indices from an ODEFunction h(x) used in DifferentialEquations.jl.
 The ODE h must be in Mass Matrix form meaning: M ẋ = h(x), with M diagonal. h should be inplace.
 """

@@ -3,7 +3,7 @@
 
 Generates a random power grid using SyntheticNetworks and then turns it into a PowerDynamics.PowerGrid type.
 """
-function random_PD_grid(pg_struct::PGGeneration3)
+function random_PD_grid(pg_struct::PGGeneration)
     validate_struct(pg_struct) # Test if options given by the user are valid
 
     # Accessing the data from the struct

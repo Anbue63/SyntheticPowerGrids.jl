@@ -1,4 +1,4 @@
-@with_kw struct PGGeneration3
+@with_kw struct PGGeneration
     P_base::Float64 = 100 * 10^6; @assert P_base > 0.0 "Base Power has to be positive."
     V_base::Float64 = 380 * 10^3; @assert V_base > 0.0 "Base Voltage has to be positive."
     loads::Symbol = :PQAlgebraic;
@@ -20,7 +20,7 @@
     slack::Bool = true
 end
 
-function validate_struct(pg_struct::PGGeneration3)
+function validate_struct(pg_struct::PGGeneration)
     if pg_struct.V_base != 380 * 10^3
         error("This voltage level is not supported. Please use V_base = 380 * 10^3 instead.")
     end

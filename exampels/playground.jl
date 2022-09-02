@@ -12,10 +12,10 @@ nodal_shares_c = Dict(:load_share => 0.5, :schmietendorf_share => 0.25, :schiffe
 nodal_shares_d = Dict(:load_share => 0.0, :swingLVS_share => 1.0)
 edge_parameters = Dict(:K => -10im)
 
-a = PGGeneration3(num_nodes = 100, nodal_parameters = nodal_parameters_a, loads = :PQAlgebraic, lines = :StaticLine, nodal_shares = nodal_shares_a)
-b = PGGeneration3(num_nodes = 100, nodal_parameters = nodal_parameters_b, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :Schmietendorf, nodal_shares = nodal_shares_b)
-c = PGGeneration3(num_nodes = 100, nodal_parameters = nodal_parameters_c, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :Mixed, nodal_shares = nodal_shares_c)
-d = PGGeneration3(num_nodes = 100, nodal_parameters = nodal_parameters_d, loads = :PQAlgebraic, lines = :StaticLine, generation_dynamics = :SwingEqLVS, coupling = :homogenous, edge_parameters = edge_parameters, nodal_shares = nodal_shares_d, slack = false)
+a = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_a, loads = :PQAlgebraic, lines = :StaticLine, nodal_shares = nodal_shares_a)
+b = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_b, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :Schmietendorf, nodal_shares = nodal_shares_b)
+c = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_c, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :Mixed, nodal_shares = nodal_shares_c)
+d = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_d, loads = :PQAlgebraic, lines = :StaticLine, generation_dynamics = :SwingEqLVS, coupling = :homogenous, edge_parameters = edge_parameters, nodal_shares = nodal_shares_d, slack = false)
 
 ##
 pg, op, embedded_graph, rejections = random_PD_grid(d)
