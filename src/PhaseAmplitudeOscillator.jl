@@ -14,8 +14,9 @@ function parameter_schiffer(;P_set, Q_set, τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
     Gₓ = - K_P 
     Hₓ = 0 
     Mₓ = τ_P
+    xdims = 1
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims]
 end
 
 function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n) 
@@ -30,8 +31,9 @@ function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n)
     Gₓ = -1
     Hₓ = 0
     Mₓ = 1.0
+    xdims = 1
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims]
 end
 
 struct NormalForm <: AbstractNode
@@ -47,14 +49,15 @@ struct NormalForm <: AbstractNode
     Hₓ
     Mₓ
     Y_n # Shunt admittance for power dynamics
+    xdims
 end
 
-NormalForm(; Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = 0) = NormalForm(Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n)
+NormalForm(; Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = 0, xdims) = NormalForm(Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims)
 
 function construct_vertex(nf::NormalForm)
     sym = symbolsof(nf)
     dim = dimension(nf)
-    mass_matrix = ones(Int64,3,3) |> Diagonal
+    mass_matrix = ones(Int64,dim,dim) |> Diagonal
     
     Aᵤ = nf.Aᵤ
     Bᵤ = nf.Bᵤ
@@ -70,28 +73,40 @@ function construct_vertex(nf::NormalForm)
     Mₓ = nf.Mₓ
 
     Y_n = nf.Y_n
+    
+    @assert length(Aₓ) == nf.xdims
+    @assert length(Bₓ) == nf.xdims
+    @assert length(Cₓ) == nf.xdims
+    @assert length(Gₓ) == nf.xdims
+    @assert length(Hₓ) == nf.xdims
+    @assert length(Mₓ) == nf.xdims
 
-    function rhs!(dx, x, edges, p, t)
-        i = total_current(edges) + Y_n * (x[1] + x[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
-        u = x[1] + x[2] * im  # Complex Voltage
-        ω = x[3]              # Frequency (or any other internal variable x)
+    function rhs!(dz, z, edges, p, t)
+        i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
+        u = z[1] + z[2] * im  # Complex Voltage
+        x = z[3:dim]          # Internal Variables
         s = u * conj(i)       # Apparent Power S = P + iQ
         v2 = abs2(u)          # Absolute squared voltage
     
-        dω = (Aₓ + Bₓ * ω + Cₓ * v2 + Gₓ * real(s) + Hₓ * imag(s)) / Mₓ
-        du = (Aᵤ + Bᵤ * ω + Cᵤ * v2 + Gᵤ * real(s) + Hᵤ * imag(s)) * u
+        dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
+        du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
         
         # Splitting the with the complex parameters
-        dx[1] = real(du)  
-        dx[2] = imag(du)
-        dx[3] = real(dω)
+        dz[1] = real(du)  
+        dz[2] = imag(du)
+        dz[3:dim] = real(dx)
         return nothing
     end
+
     ODEVertex(rhs!, dim, mass_matrix, sym)
+
 end
 
-symbolsof(nf::NormalForm) = [:u_r, :u_i, :ω]
+function symbolsof(nf::NormalForm)
+    symbols = [:u_r, :u_i]
+    append!(symbols, [Symbol("x_$i") for i in 1:nf.xdims])
+end
 
-dimension(nf::NormalForm) = 3
+dimension(nf::NormalForm) = 2 + nf.xdims
 
 export NormalForm
