@@ -47,8 +47,8 @@ function validate_struct(pg_struct::PGGeneration)
         error("This option for the coupling is not supported. Please use coupling = :line_lengths or :homogenous instead.")
     end
 
-    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf && pg_struct.generation_dynamics != :Mixed  && pg_struct.generation_dynamics != :SwingEqLVS #&& pg_struct.generation_dynamics != :SwingEq
-        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox, :Schmietendorf, :SwingEqLVS, :SwingEq or :Mixed instead.")
+    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf && pg_struct.generation_dynamics != :Mixed  && pg_struct.generation_dynamics != :SwingEqLVS && pg_struct.generation_dynamics != :dVOCapprox #&& pg_struct.generation_dynamics != :SwingEq
+        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox, :Schmietendorf, :SwingEqLVS, :SwingEq, :dVOCapprox or :Mixed instead.")
     end
 
     try 
@@ -62,6 +62,14 @@ function validate_struct(pg_struct::PGGeneration)
             pg_struct.nodal_shares[:schmietendorf_share]
         catch err
             error("Please define the share of Schmietendorf nodes in the network.")
+        end
+    end
+
+    if pg_struct.generation_dynamics == :dVOCapprox
+        try 
+            pg_struct.nodal_shares[:dVOC_share]
+        catch err
+            error("Please define the share of dVOCapprox nodes in the network.")
         end
     end
 

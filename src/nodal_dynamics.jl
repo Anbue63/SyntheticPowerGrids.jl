@@ -29,6 +29,10 @@ function get_nodes(pg, op_ancillary, pg_struct)
         swingLVS_share =  pg_struct.nodal_shares[:swingLVS_share]
 
         nodes = get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + swingLVS_share])
+    elseif pg_struct.generation_dynamics == :dVOCapprox 
+        dVOCapprox_share = pg_struct.nodal_shares[:dVOC_share]
+
+        nodes = get_nodes_dVOCapprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + dVOCapprox_share])
     #elseif pg_struct.generation_dynamics == :SwingEq
     #    swing_share =  pg_struct.nodal_shares[:swing_share]
     
@@ -110,6 +114,28 @@ function get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, 
         if nodal_dyn_prob[n] > threshold[1]
             if threshold[2] >= nodal_dyn_prob[n] 
                 nodes[n] = SwingEqLVS(H = H, P = op_ancillary[n, :p], D = D, Ω = Ω, Γ = Γ, V = V)
+            end
+        end
+    end
+    return nodes
+end
+
+function get_nodes_dVOCapprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+    nodal_parameters = pg_struct.nodal_parameters
+
+    Ω = nodal_parameters[:Ω] # Rated Frequency
+    η = nodal_parameters[:η] # positive control parameter
+    α = nodal_parameters[:α] # positive control parameter
+    κ = nodal_parameters[:κ] # uniform complex phase
+
+    for n in 1:nv(pg.graph)
+        if nodal_dyn_prob[n] > threshold[1]
+            if threshold[2] >= nodal_dyn_prob[n]
+                P_set = op_ancillary[n, :p] # active power set point
+                Q_set = op_ancillary[n, :q] # reactive power set point
+                V_set = op_ancillary[n, :v] # voltage magnitude set point
+                Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, Ω_set = Ω, η = η, α = α, κ = κ, Y_n = 0.0)
+                nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ)
             end
         end
     end

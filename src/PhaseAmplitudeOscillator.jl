@@ -36,6 +36,25 @@ function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n)
     return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims]
 end
 
+function parameter_dVOC(;P_set, Q_set, V_set, Ω_set, η, α, κ, Y_n)
+    #ToDo: Is Ω_set always 0 ?
+    Cᵤ = - α * η / (V_set^2) + η * exp(κ * 1im) * complex(P_set, - Q_set) / (V_set^4)
+    Gᵤ = - η * exp(κ * 1im) / (V_set^2)
+    Hᵤ = 1im * η * exp(κ * 1im) / (V_set^2)
+    Aᵤ = 1im * Ω_set  - Cᵤ * (V_set)^2 - Gᵤ * P_set - Hᵤ * Q_set
+
+    Bᵤ = 0
+    
+    Aₓ = 0
+    Bₓ = 0
+    Cₓ = 0
+    Gₓ = 0 
+    Hₓ = 0 
+    Mₓ = 1.0
+
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n]
+end
+
 struct NormalForm <: AbstractNode
     Aᵤ
     Bᵤ
