@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate(joinpath(@__DIR__, "../"))
+Pkg.activate(@__DIR__)
 using Revise
 using SyntheticPowerGrids
 
@@ -26,7 +26,6 @@ x0[1, :v] = 1.5
 prob = ODEProblem(rpg, x0.vec, (0.0, 100.0), nothing)
 sol = solve(prob, Rodas4())
 solution1 = PowerGridSolution(sol, pg)
-println()
 
 ##
 plot(solution1, :, :v, legend=false)
