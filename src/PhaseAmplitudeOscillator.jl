@@ -45,14 +45,15 @@ function parameter_dVOC(;P_set, Q_set, V_set, Ω_set, η, α, κ, Y_n)
 
     Bᵤ = 0
     
-    Aₓ = 0
-    Bₓ = 0
-    Cₓ = 0
-    Gₓ = 0 
-    Hₓ = 0 
-    Mₓ = 1.0
+    Aₓ = []
+    Bₓ = []
+    Cₓ = []
+    Gₓ = [] 
+    Hₓ = [] 
+    Mₓ = []
+    xdims = 0
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims]
 end
 
 struct NormalForm <: AbstractNode

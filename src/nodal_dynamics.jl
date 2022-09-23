@@ -63,7 +63,7 @@ function get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, 
                 β = rand(1:length(nodal_parameters[:τ_P])) # Randomly chooses one of three possible time constant for the low pass filter measuring the active power
                 τ_P_node = τ_P[β]
                 Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = parameter_schiffer(P_set = op_ancillary[n, :p], Q_set = op_ancillary[n, :q], τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, τ_P = τ_P_node, Y_n = 0.0)
-                nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ)
+                nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, xdims = 1)
             end
         end
     end
@@ -85,7 +85,7 @@ function get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_p
                 E_f = E_set + (X * Q_n / (E_set)) # Electric field voltage that results in the correct nodal voltage magnitude
 
                 Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = parameter_schmietendorf(P_m = op_ancillary[n, :p], E_f = E_f, E_set = E_set, X = X, α = α, γ = γ, Y_n = 0.0)
-                nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ)
+                nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, xdims = 1)
             end
         end
     end
@@ -135,7 +135,7 @@ function get_nodes_dVOCapprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob
                 Q_set = op_ancillary[n, :q] # reactive power set point
                 V_set = op_ancillary[n, :v] # voltage magnitude set point
                 Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, Ω_set = Ω, η = η, α = α, κ = κ, Y_n = 0.0)
-                nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ)
+                nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, xdims = 0)
             end
         end
     end
