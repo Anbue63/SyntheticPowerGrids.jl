@@ -103,7 +103,7 @@ function construct_vertex(nf::NormalForm)
         @assert length(Hₓ) == nf.xdims
         @assert length(Mₓ) == nf.xdims
 
-        function rhs!(dz, z, edges, p, t)
+        rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
             x = z[3:dim]          # Internal Variables
@@ -122,7 +122,7 @@ function construct_vertex(nf::NormalForm)
 
     else
 
-        function rhs!(dz, z, edges, p, t)
+        rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
             s = u * conj(i)       # Apparent Power S = P + iQ
