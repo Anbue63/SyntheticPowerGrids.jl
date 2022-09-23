@@ -93,29 +93,49 @@ function construct_vertex(nf::NormalForm)
     Mₓ = nf.Mₓ
 
     Y_n = nf.Y_n
-    
-    @assert length(Aₓ) == nf.xdims
-    @assert length(Bₓ) == nf.xdims
-    @assert length(Cₓ) == nf.xdims
-    @assert length(Gₓ) == nf.xdims
-    @assert length(Hₓ) == nf.xdims
-    @assert length(Mₓ) == nf.xdims
 
-    function rhs!(dz, z, edges, p, t)
-        i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
-        u = z[1] + z[2] * im  # Complex Voltage
-        x = z[3:dim]          # Internal Variables
-        s = u * conj(i)       # Apparent Power S = P + iQ
-        v2 = abs2(u)          # Absolute squared voltage
-    
-        dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
-        du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
+    if xdims > 0
+
+        @assert length(Aₓ) == nf.xdims
+        @assert length(Bₓ) == nf.xdims
+        @assert length(Cₓ) == nf.xdims
+        @assert length(Gₓ) == nf.xdims
+        @assert length(Hₓ) == nf.xdims
+        @assert length(Mₓ) == nf.xdims
+
+        function rhs!(dz, z, edges, p, t)
+            i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
+            u = z[1] + z[2] * im  # Complex Voltage
+            x = z[3:dim]          # Internal Variables
+            s = u * conj(i)       # Apparent Power S = P + iQ
+            v2 = abs2(u)          # Absolute squared voltage
         
-        # Splitting the with the complex parameters
-        dz[1] = real(du)  
-        dz[2] = imag(du)
-        dz[3:dim] = real(dx)
-        return nothing
+            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
+            du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
+            
+            # Splitting the with the complex parameters
+            dz[1] = real(du)  
+            dz[2] = imag(du)
+            dz[3:dim] = real(dx)
+            return nothing
+        end
+
+    else
+
+        function rhs!(dz, z, edges, p, t)
+            i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
+            u = z[1] + z[2] * im  # Complex Voltage
+            s = u * conj(i)       # Apparent Power S = P + iQ
+            v2 = abs2(u)          # Absolute squared voltage
+        
+            du = (Aᵤ + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
+            
+            # Splitting the with the complex parameters
+            dz[1] = real(du)  
+            dz[2] = imag(du)
+            return nothing
+        end
+
     end
 
     ODEVertex(rhs!, dim, mass_matrix, sym)
