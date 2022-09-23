@@ -94,7 +94,7 @@ function construct_vertex(nf::NormalForm)
 
     Y_n = nf.Y_n
 
-    if xdims > 0
+    if nf.xdims > 0
 
         @assert length(Aₓ) == nf.xdims
         @assert length(Bₓ) == nf.xdims
