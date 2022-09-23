@@ -14,9 +14,9 @@ function parameter_schiffer(;P_set, Q_set, τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
     Gₓ = - K_P 
     Hₓ = 0 
     Mₓ = τ_P
-    xdims = 1
+    x_dims = 1
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims]
 end
 
 function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n) 
@@ -31,13 +31,12 @@ function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n)
     Gₓ = -1
     Hₓ = 0
     Mₓ = 1.0
-    xdims = 1
+    x_dims = 1
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims]
 end
 
 function parameter_dVOC(;P_set, Q_set, V_set, Ω_set, η, α, κ, Y_n)
-    #ToDo: Is Ω_set always 0 ?
     Cᵤ = - α * η / (V_set^2) + η * exp(κ * 1im) * complex(P_set, - Q_set) / (V_set^4)
     Gᵤ = - η * exp(κ * 1im) / (V_set^2)
     Hᵤ = 1im * η * exp(κ * 1im) / (V_set^2)
@@ -51,9 +50,9 @@ function parameter_dVOC(;P_set, Q_set, V_set, Ω_set, η, α, κ, Y_n)
     Gₓ = [] 
     Hₓ = [] 
     Mₓ = []
-    xdims = 0
+    x_dims = 0
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims]
 end
 
 struct NormalForm <: AbstractNode
@@ -68,11 +67,11 @@ struct NormalForm <: AbstractNode
     Gₓ
     Hₓ
     Mₓ
-    Y_n # Shunt admittance for power dynamics
-    xdims
+    Y_n    # Shunt admittance for power dynamics
+    x_dims # Dimension of the internal variables
 end
 
-NormalForm(; Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = 0, xdims) = NormalForm(Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, xdims)
+NormalForm(; Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = 0, x_dims) = NormalForm(Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims)
 
 function construct_vertex(nf::NormalForm)
     sym = symbolsof(nf)
@@ -94,14 +93,14 @@ function construct_vertex(nf::NormalForm)
 
     Y_n = nf.Y_n
 
-    if nf.xdims > 0
+    if nf.x_dims > 0
 
-        @assert length(Aₓ) == nf.xdims
-        @assert length(Bₓ) == nf.xdims
-        @assert length(Cₓ) == nf.xdims
-        @assert length(Gₓ) == nf.xdims
-        @assert length(Hₓ) == nf.xdims
-        @assert length(Mₓ) == nf.xdims
+        @assert length(Aₓ) == nf.x_dims
+        @assert length(Bₓ) == nf.x_dims
+        @assert length(Cₓ) == nf.x_dims
+        @assert length(Gₓ) == nf.x_dims
+        @assert length(Hₓ) == nf.x_dims
+        @assert length(Mₓ) == nf.x_dims
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
@@ -113,7 +112,7 @@ function construct_vertex(nf::NormalForm)
             dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
             du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
             
-            # Splitting the with the complex parameters
+            # Splitting the complex parameters
             dz[1] = real(du)  
             dz[2] = imag(du)
             dz[3:dim] = real(dx)
@@ -130,7 +129,7 @@ function construct_vertex(nf::NormalForm)
         
             du = (Aᵤ + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
             
-            # Splitting the with the complex parameters
+            # Splitting the complex parameters
             dz[1] = real(du)  
             dz[2] = imag(du)
             return nothing
@@ -144,9 +143,9 @@ end
 
 function symbolsof(nf::NormalForm)
     symbols = [:u_r, :u_i]
-    append!(symbols, [Symbol("x_$i") for i in 1:nf.xdims])
+    append!(symbols, [Symbol("x_$i") for i in 1:nf.x_dims])
 end
 
-dimension(nf::NormalForm) = 2 + nf.xdims
+dimension(nf::NormalForm) = 2 + nf.x_dims
 
 export NormalForm
