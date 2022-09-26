@@ -1,7 +1,6 @@
 # SyntheticPowerGrids
 
 ## ToDos
-1. PowerModels.jl algo -> what is going on?
-2. Fluctuations
-3. Normal Form parameter calculation -> internally deal with the variation from the set points!
-4. Add an option without line losses
+1. Fluctuations
+2. Normal Form parameter calculation -> internally deal with the variation from the set points!, use set points in -> PowerModels.jl algo 
+3. Add an option without line losses
