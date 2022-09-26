@@ -1,5 +1,5 @@
-using Pkg
-Pkg.activate(@__DIR__)
+#using Pkg
+#Pkg.activate(@__DIR__)
 
 using Revise
 using SyntheticPowerGrids
@@ -23,7 +23,12 @@ d = PGGeneration(num_nodes = 100, power_distribution = :Plus_Minus_1, nodal_para
 for_mehrnaz = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_d, loads = :PQAlgebraic, lines = :StaticLine, generation_dynamics = :SwingEqLVS, nodal_shares = nodal_shares_d)
 
 ##
-pg, op, embedded_graph, rejections = random_PD_grid(for_mehrnaz)
+pg, op, embedded_graph, rejections = random_PD_grid(a)
+
+rhs(pg)
+
+find_operationpoint(pg)
+
 op[:, :p] # vector containing all nodal active powers
 
 #get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)

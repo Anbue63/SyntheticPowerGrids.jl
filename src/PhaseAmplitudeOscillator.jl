@@ -74,9 +74,14 @@ end
 NormalForm(; Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = 0, x_dims) = NormalForm(Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims)
 
 function construct_vertex(nf::NormalForm)
+    @assert isreal(nf.x_dims)  "The dimension of x has to be a real number!"
+    @assert isinteger(real(nf.x_dims)) "The dimension of x has to be a an integer!"
+    @assert real(nf.x_dims) >= 0 "The dimension of x can not be negative!"
+    x_dims = Int64(real(nf.x_dims))
+
     sym = symbolsof(nf)
     dim = dimension(nf)
-    mass_matrix = ones(Int64,dim,dim) |> Diagonal
+    mass_matrix = ones(Int64, dim, dim) |> Diagonal
     
     Aᵤ = nf.Aᵤ
     Bᵤ = nf.Bᵤ
@@ -93,15 +98,14 @@ function construct_vertex(nf::NormalForm)
 
     Y_n = nf.Y_n
 
-    if nf.x_dims > 0
+    @assert length(Aₓ) == x_dims "Aₓ parameters have the wrong dimension."
+    @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
+    @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
+    @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
+    @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
+    @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
 
-        @assert length(Aₓ) == nf.x_dims
-        @assert length(Bₓ) == nf.x_dims
-        @assert length(Cₓ) == nf.x_dims
-        @assert length(Gₓ) == nf.x_dims
-        @assert length(Hₓ) == nf.x_dims
-        @assert length(Mₓ) == nf.x_dims
-
+    if x_dims > 1      
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
@@ -118,9 +122,7 @@ function construct_vertex(nf::NormalForm)
             dz[3:dim] = real(dx)
             return nothing
         end
-
     else
-
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
@@ -134,18 +136,30 @@ function construct_vertex(nf::NormalForm)
             dz[2] = imag(du)
             return nothing
         end
-
     end
 
     ODEVertex(rhs!, dim, mass_matrix, sym)
-
 end
 
 function symbolsof(nf::NormalForm)
-    symbols = [:u_r, :u_i]
-    append!(symbols, [Symbol("x_$i") for i in 1:nf.x_dims])
+    if imag(nf.x_dims) == 0.0
+        x_dims = Int64(real(nf.x_dims))
+        symbols = [:u_r, :u_i]
+        append!(symbols, [Symbol("x_$i") for i in 1:x_dims])
+
+        return symbols
+    else
+        error("The normal form dimension has to be a real number!")
+    end
 end
 
-dimension(nf::NormalForm) = 2 + nf.x_dims
+function dimension(nf::NormalForm)
+    if imag(nf.x_dims) == 0.0
+        x_dims = Int64(real(nf.x_dims))
+        return 2 + x_dims
+    else
+        error("The normal form dimension has to be a real number!")
+    end
+end
 
 export NormalForm
