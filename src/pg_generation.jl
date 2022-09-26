@@ -3,7 +3,7 @@
 
 Generates a random power grid using SyntheticNetworks and then turns it into a PowerDynamics.PowerGrid type.
 """
-function random_PD_grid(pg_struct::PGGeneration)
+function random_PD_grid(pg_struct::PGGeneration1)
     validate_struct(pg_struct) # Test if options given by the user are valid
 
     # Accessing the data from the struct
@@ -13,9 +13,17 @@ function random_PD_grid(pg_struct::PGGeneration)
     rejections = 0
     
     for i in 1:pg_struct.maxiters # maxiters until a stable grid is found 
-        embedded_graph = generate_graph(RandomPowerGrid(N, n0, p, q, r, s, u)) # Random power grid topology
+        if pg_struct.embedded_graph === nothing
+            embedded_graph = generate_graph(RandomPowerGrid(N, n0, p, q, r, s, u)) # Random power grid topology
+        else 
+            embedded_graph = pg_struct.embedded_graph
+        end
         
-        P_vec = get_power_distribution(pg_struct)       
+        if typeof(pg_struct.P_vec) == Vector{Nothing} 
+            P_vec = get_power_distribution(pg_struct)
+        else    
+            P_vec = pg_struct.P_vec
+        end
 
         lines = get_lines(embedded_graph, pg_struct, Y_base, embedded_graph) # Line dynamics
         op_ancillary = get_ancillary_grid(embedded_graph, P_vec, lines)  # Operation point of Ancillary power grid

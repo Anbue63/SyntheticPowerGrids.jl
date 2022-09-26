@@ -13,7 +13,7 @@ module SyntheticPowerGrids
     using KernelDensity
 
     include("pg_struct.jl")
-    export PGGeneration
+    export PGGeneration1
     
     include("line_parameters.jl")
     export get_effective_distances
