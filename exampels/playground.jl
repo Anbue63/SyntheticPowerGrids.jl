@@ -23,23 +23,9 @@ d = PGGeneration1(num_nodes = 100, power_distribution = :Plus_Minus_1, nodal_par
 for_mehrnaz = PGGeneration1(num_nodes = 100, nodal_parameters = nodal_parameters_d, loads = :PQAlgebraic, lines = :StaticLine, generation_dynamics = :SwingEqLVS, nodal_shares = nodal_shares_d)
 
 ##
-pg, op, embedded_graph, rejections = random_PD_grid(b)
+pg, op, embedded_graph, rejections = random_PD_grid(d)
 op[:, :p] # vector containing all nodal active powers
 # get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
-
-##
-# Generate grid with own topology!
-using SyntheticNetworks
-num_nodes = 10
-own_graph = generate_graph(RandomPowerGrid(num_nodes, [1, 1/5, 3/10, 1/3, 1/10, 0.0]...))
-P_vec = rand(num_nodes)
-
-nodal_parameters = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0])
-nodal_shares = Dict(:DroopControlledInverterApprox_share => 1.0, :load_share => 0.0)
-
-x = PGGeneration1(num_nodes = num_nodes, nodal_parameters = nodal_parameters, nodal_shares = nodal_shares, P_vec = P_vec, embedded_graph = own_graph)
-pg, op, embedded_graph, rejections = random_PD_grid(x)
-
 
 ##
 using OrdinaryDiffEq

@@ -56,8 +56,8 @@ function validate_struct(pg_struct::PGGeneration1)
         end
     end
 
-    if pg_struct.coupling != :line_lengths && pg_struct.coupling != :homogenous
-        error("This option for the coupling is not supported. Please use coupling = :line_lengths or :homogenous instead.")
+    if pg_struct.coupling != :line_lengths && pg_struct.coupling != :homogenous && pg_struct.coupling != :predefined
+        error("This option for the coupling is not supported. Please use coupling = :line_lengths, :homogenous or :predefined instead.")
     end
 
     if pg_struct.generation_dynamics != :DroopControlledInverterApprox && pg_struct.generation_dynamics != :ThirdOrderMachineApprox && pg_struct.generation_dynamics != :Mixed  && pg_struct.generation_dynamics != :SwingEqLVS && pg_struct.generation_dynamics != :dVOCapprox #&& pg_struct.generation_dynamics != :SwingEq
