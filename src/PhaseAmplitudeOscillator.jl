@@ -109,7 +109,14 @@ function construct_vertex(nf::NormalForm)
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
-            x = z[3:dim]          # Internal Variables
+
+            # Internal Variables
+            if dim == 3 # special case of a single internal variable
+                x = z[3]          
+            elseif dim > 3
+                x = z[3:dim]
+            end
+            
             s = u * conj(i)       # Apparent Power S = P + iQ
             v2 = abs2(u)          # Absolute squared voltage
         
@@ -119,9 +126,14 @@ function construct_vertex(nf::NormalForm)
             # Splitting the complex parameters
             dz[1] = real(du)  
             dz[2] = imag(du)
-            dz[3:dim] = real(dx)
+
+            if dim == 3 # special case of a single internal variable
+                dz[3] = real(dx)          
+            elseif dim > 3
+                dz[3:dim] = real(dx)
+            end
             return nothing
-        end
+        end        
     else
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
