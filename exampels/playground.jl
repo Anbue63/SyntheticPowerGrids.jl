@@ -24,14 +24,8 @@ for_mehrnaz = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_
 
 ##
 pg, op, embedded_graph, rejections = random_PD_grid(b)
-
-rhs(pg)
-
-find_operationpoint(pg)
-
 op[:, :p] # vector containing all nodal active powers
-
-#get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
+# get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
 
 ##
 using OrdinaryDiffEq
@@ -39,14 +33,13 @@ using PowerDynamics
 using Plots
 
 rpg = rhs(pg)
-
-ω_idx = findall(map(x -> 'ω' == string(x)[1], rpg.syms))
-
 x0 = copy(op)
 
-x0.vec[ω_idx[1]] = 1
+x0.vec[1] = 2
 
 prob = ODEProblem(rpg, x0.vec, (0.0, 100.0), nothing)
 sol = solve(prob, Rodas4())
 
-plot(sol, idxs = ω_idx)
+sol = PowerGridSolution(sol, pg)
+
+plot(sol, :, :v, legend=false)

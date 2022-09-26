@@ -98,25 +98,19 @@ function construct_vertex(nf::NormalForm)
 
     Y_n = nf.Y_n
 
-    @assert length(Aₓ) == x_dims "Aₓ parameters have the wrong dimension."
-    @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
-    @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
-    @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
-    @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
-    @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
+    if x_dims == 1  # Special case of a single internal variable
+        @assert length(Aₓ) == x_dims "Aₓ parameters have the wrong dimension."
+        @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
+        @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
+        @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
+        @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
+        @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
 
-    if x_dims > 0      
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
+            x = z[3]              # Internal Variable  
 
-            # Internal Variables
-            if dim == 3 # special case of a single internal variable
-                x = z[3]          
-            elseif dim > 3
-                x = z[3:dim]
-            end
-            
             s = u * conj(i)       # Apparent Power S = P + iQ
             v2 = abs2(u)          # Absolute squared voltage
         
@@ -127,14 +121,14 @@ function construct_vertex(nf::NormalForm)
             dz[1] = real(du)  
             dz[2] = imag(du)
 
-            if dim == 3 # special case of a single internal variable
+            if dim == 3
                 dz[3] = real(dx)          
             elseif dim > 3
                 dz[3:dim] = real(dx)
             end
             return nothing
-        end        
-    else
+        end
+    elseif x_dims == 0  # Special case of no internal variable
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
@@ -148,8 +142,32 @@ function construct_vertex(nf::NormalForm)
             dz[2] = imag(du)
             return nothing
         end
-    end
+    elseif x_dims > 1 # Case of multiple internal variables
+        @assert length(Aₓ) == x_dims "Aₓ parameters have the wrong dimension."
+        @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
+        @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
+        @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
+        @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
+        @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
+        rhs! = function (dz, z, edges, p, t)
+            i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
+            u = z[1] + z[2] * im  # Complex Voltage
+            x = z[3:dim]          # Internal Variables
+            
+            s = u * conj(i)       # Apparent Power S = P + iQ
+            v2 = abs2(u)          # Absolute squared voltage
+        
+            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
+            du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
+            
+            # Splitting the complex parameters
+            dz[1] = real(du)  
+            dz[2] = imag(du)
+            dz[3:dim] = real(dx)
 
+            return nothing
+        end
+    end
     ODEVertex(rhs!, dim, mass_matrix, sym)
 end
 
