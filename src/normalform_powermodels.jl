@@ -1,7 +1,7 @@
 import PowerDynamics: make_generator!, _make_generator_header
 import PowerDynamics: make_bus_ac!, _make_bus_ac_header
 
-function make_generator!(dict::Dict{String,Any}, key_b::Int, node::SchifferApprox)
+function make_generator!(dict::Dict{String,Any}, key_b::Int, node::DroopControlledInverterApprox)
     _make_generator_header(dict, key_b)
     key = length(dict["gen"])
     ((dict["gen"])[string(key)])["pg"] = node.P
@@ -10,7 +10,7 @@ function make_generator!(dict::Dict{String,Any}, key_b::Int, node::SchifferAppro
     ((dict["gen"])[string(key)])["vg"] = node.V_r
 end
 
-function make_bus_ac!(data::Dict{String,Any}, node::SchifferApprox)
+function make_bus_ac!(data::Dict{String,Any}, node::DroopControlledInverterApprox)
     bus_dict = _make_bus_ac_header(data)
     bus_dict["bus_type"] = 2
     bus_dict["vm"] = abs(node.V_r)  # assumed p.u.

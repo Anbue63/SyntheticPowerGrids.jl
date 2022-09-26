@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate(@__DIR__)
+#Pkg.activate(@__DIR__)
 using Revise
 using SyntheticPowerGrids
 
@@ -16,9 +16,6 @@ using PowerDynamics
 using Plots
 
 rpg = rhs(pg)
-
-ω_idx = findall(map(x -> 'ω' == string(x)[1], rpg.syms))
-
 x0 = copy(op)
 
 x0[1, :v] = 1.5

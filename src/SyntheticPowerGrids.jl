@@ -19,7 +19,7 @@ module SyntheticPowerGrids
     export get_effective_distances
     
     include("PhaseAmplitudeOscillator.jl")
-    export parameter_schiffer
+    export parameter_DroopControlledInverterApprox
 
     include("pg_generation.jl")
     export random_PD_grid
