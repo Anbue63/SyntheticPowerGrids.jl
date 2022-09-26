@@ -120,12 +120,8 @@ function construct_vertex(nf::NormalForm)
             # Splitting the complex parameters
             dz[1] = real(du)  
             dz[2] = imag(du)
+            dz[3] = real(dx)          
 
-            if dim == 3
-                dz[3] = real(dx)          
-            elseif dim > 3
-                dz[3:dim] = real(dx)
-            end
             return nothing
         end
     elseif x_dims == 0  # Special case of no internal variable
