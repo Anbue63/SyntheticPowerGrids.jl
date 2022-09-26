@@ -99,12 +99,18 @@ function construct_vertex(nf::NormalForm)
     Y_n = nf.Y_n
 
     if x_dims == 1  # Special case of a single internal variable
-        @assert length(Aₓ) == x_dims "Aₓ parameters have the wrong dimension."
-        @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
-        @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
-        @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
-        @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
-        @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
+        @assert length(Aₓ) == x_dims "Aₓ parameter has the wrong dimension."
+        @assert length(Bₓ) == x_dims "Bₓ parameter has the wrong dimension."
+        @assert length(Cₓ) == x_dims "Cₓ parameter has the wrong dimension."
+        @assert length(Gₓ) == x_dims "Gₓ parameter has the wrong dimension."
+        @assert length(Hₓ) == x_dims "Hₓ parameter has the wrong dimension."
+        @assert length(Mₓ) == x_dims "Mₓ parameter has the wrong dimension."
+        @assert imag(Aₓ) == 0 "Aₓ must be real."
+        @assert imag(Bₓ) == 0 "Bₓ must be real."
+        @assert imag(Cₓ) == 0 "Cₓ must be real."
+        @assert imag(Gₓ) == 0 "Gₓ must be real."
+        @assert imag(Hₓ) == 0 "Hₓ must be real."
+        @assert imag(Mₓ) == 0 "Mₓ must be real."
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
@@ -114,8 +120,8 @@ function construct_vertex(nf::NormalForm)
             s = u * conj(i)       # Apparent Power S = P + iQ
             v2 = abs2(u)          # Absolute squared voltage
         
-            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
-            du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
+            dx = (Aₓ + Bₓ * x + Cₓ * v2 + Gₓ * real(s) + Hₓ * imag(s)) / Mₓ
+            du = (Aᵤ + Bᵤ * x + Cᵤ * v2 + Gᵤ * real(s) + Hᵤ * imag(s)) * u
             
             # Splitting the complex parameters
             dz[1] = real(du)  
@@ -139,12 +145,27 @@ function construct_vertex(nf::NormalForm)
             return nothing
         end
     elseif x_dims > 1 # Case of multiple internal variables
+        @assert typeof(Aₓ) <: Array "Aₓ must be an array."
+        @assert all(imag(Aₓ) .== 0) "Aₓ must be real."
         @assert length(Aₓ) == x_dims "Aₓ parameters have the wrong dimension."
-        @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
+        @assert typeof(Bₓ) <: Matrix "Bₓ must be a matrix."
+        @assert all(imag(Bₓ) .== 0) "Bₓ must be real."
+        @assert size(Bₓ) == (x_dims,x_dims) "Bₓ parameters have the wrong dimension."
+        @assert typeof(Cₓ) <: Array "Cₓ must be an array."
+        @assert all(imag(Cₓ) .== 0) "Cₓ must be real."
         @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
+        @assert typeof(Gₓ) <: Array "Gₓ must be an array."
+        @assert all(imag(Gₓ) .== 0) "Gₓ must be real."
         @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
+        @assert typeof(Hₓ) <: Array "Hₓ must be an array."
+        @assert all(imag(Hₓ) .== 0) "Hₓ must be real."
         @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
+        @assert typeof(Mₓ) <: Array "Mₓ must be an array."
+        @assert all(imag(Mₓ) .== 0) "Mₓ must be real."
         @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
+        @assert typeof(Bᵤ) <: Matrix "Bᵤ must be a matrix."
+        @assert size(Bᵤ) == (1,x_dims) "Bₓ parameters have the wrong dimension."
+
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
@@ -153,8 +174,8 @@ function construct_vertex(nf::NormalForm)
             s = u * conj(i)       # Apparent Power S = P + iQ
             v2 = abs2(u)          # Absolute squared voltage
         
-            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
-            du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
+            dx = (Aₓ + Bₓ * x + Cₓ * v2 + Gₓ * real(s) + Hₓ * imag(s)) ./ Mₓ
+            du = (Aᵤ + Bᵤ * x + Cᵤ * v2 + Gᵤ * real(s) + Hᵤ * imag(s)) * u
             
             # Splitting the complex parameters
             dz[1] = real(du)  
