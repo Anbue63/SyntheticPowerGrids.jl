@@ -105,7 +105,7 @@ function construct_vertex(nf::NormalForm)
     @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
     @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
 
-    if x_dims > 1      
+    if x_dims > 0      
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
