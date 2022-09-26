@@ -2,7 +2,7 @@ using NetworkDynamics: ODEVertex
 import PowerDynamics: dimension, symbolsof, construct_vertex 
 import PowerDynamics: showdefinition
 
-function parameter_schiffer(;P_set, Q_set, τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
+function parameter_DroopControlledInverterApprox(;P_set, Q_set, τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
     Aᵤ = (V_r + 2 * K_Q * Q_set) / (2 * τ_Q * V_r)
     Bᵤ = 1im 
     Cᵤ = - 1 / (2 * τ_Q * V_r^2)
@@ -19,7 +19,7 @@ function parameter_schiffer(;P_set, Q_set, τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
     return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims]
 end
 
-function parameter_schmietendorf(;P_m, E_f, E_set, X, α, γ, Y_n) 
+function parameter_ThirdOrderMachineApprox(;P_m, E_f, E_set, X, α, γ, Y_n) 
     Aᵤ = ((3E_f / 2E_set) - 1) / α
     Bᵤ = 1im 
     Cᵤ = (- E_f / (2E_set^3)) / α

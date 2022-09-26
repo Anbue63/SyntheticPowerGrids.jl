@@ -11,20 +11,20 @@ function get_nodes(pg, op_ancillary, pg_struct)
     
     load_share = pg_struct.nodal_shares[:load_share]
 
-    if pg_struct.generation_dynamics == :SchifferApprox 
-        schiffer_share = pg_struct.nodal_shares[:schiffer_share]
+    if pg_struct.generation_dynamics == :DroopControlledInverterApprox 
+        DroopControlledInverterApprox_share = pg_struct.nodal_shares[:DroopControlledInverterApprox_share]
 
-        nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + schiffer_share])
-    elseif pg_struct.generation_dynamics == :Schmietendorf
-        schmietendorf_share = pg_struct.nodal_shares[:schmietendorf_share]
+        nodes = get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + DroopControlledInverterApprox_share])
+    elseif pg_struct.generation_dynamics == :ThirdOrderMachineApprox
+        ThirdOrderMachineApprox_share = pg_struct.nodal_shares[:ThirdOrderMachineApprox_share]
 
-        nodes = get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + schmietendorf_share])
+        nodes = get_nodes_ThirdOrderMachineApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + ThirdOrderMachineApprox_share])
     elseif pg_struct.generation_dynamics == :Mixed
-        schmietendorf_share = pg_struct.nodal_shares[:schmietendorf_share]
-        schiffer_share = pg_struct.nodal_shares[:schiffer_share]
+        ThirdOrderMachineApprox_share = pg_struct.nodal_shares[:ThirdOrderMachineApprox_share]
+        DroopControlledInverterApprox_share = pg_struct.nodal_shares[:DroopControlledInverterApprox_share]
 
-        nodes = get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + schiffer_share])
-        nodes = get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share + schiffer_share, load_share + schiffer_share + schmietendorf_share])
+        nodes = get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + DroopControlledInverterApprox_share])
+        nodes = get_nodes_ThirdOrderMachineApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share + DroopControlledInverterApprox_share, load_share + DroopControlledInverterApprox_share + ThirdOrderMachineApprox_share])
     elseif pg_struct.generation_dynamics == :SwingEqLVS
         swingLVS_share =  pg_struct.nodal_shares[:swingLVS_share]
 
@@ -48,7 +48,7 @@ function get_nodes(pg, op_ancillary, pg_struct)
     return nodes
 end
 
-function get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+function get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
     nodal_parameters = pg_struct.nodal_parameters
 
     τ_P = nodal_parameters[:τ_P] # Time constant low pass filter measuring the active power
@@ -62,7 +62,7 @@ function get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, 
             if threshold[2] >= nodal_dyn_prob[n] 
                 β = rand(1:length(nodal_parameters[:τ_P])) # Randomly chooses one of three possible time constant for the low pass filter measuring the active power
                 τ_P_node = τ_P[β]
-                Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims = parameter_schiffer(P_set = op_ancillary[n, :p], Q_set = op_ancillary[n, :q], τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, τ_P = τ_P_node, Y_n = 0.0)
+                Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims = parameter_DroopControlledInverterApprox(P_set = op_ancillary[n, :p], Q_set = op_ancillary[n, :q], τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_r, τ_P = τ_P_node, Y_n = 0.0)
                 nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
             end
         end
@@ -70,7 +70,7 @@ function get_nodes_schiffer(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, 
     return nodes
 end
 
-function get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+function get_nodes_ThirdOrderMachineApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
     nodal_parameters = pg_struct.nodal_parameters
 
     X = nodal_parameters[:X] # Reactance
@@ -84,7 +84,7 @@ function get_nodes_schmietendorf(pg, op_ancillary, nodes, pg_struct, nodal_dyn_p
                 Q_n = op_ancillary[n, :q]
                 E_f = E_set + (X * Q_n / (E_set)) # Electric field voltage that results in the correct nodal voltage magnitude
 
-                Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims = parameter_schmietendorf(P_m = op_ancillary[n, :p], E_f = E_f, E_set = E_set, X = X, α = α, γ = γ, Y_n = 0.0)
+                Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims = parameter_ThirdOrderMachineApprox(P_m = op_ancillary[n, :p], E_f = E_f, E_set = E_set, X = X, α = α, γ = γ, Y_n = 0.0)
                 nodes[n] = NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
             end
         end

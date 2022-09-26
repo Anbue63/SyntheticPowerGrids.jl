@@ -4,7 +4,7 @@
     loads::Symbol = :PQAlgebraic;
     coupling::Symbol = :line_lengths
     lines::Symbol = :PiModelLine;
-    generation_dynamics::Symbol = :SchifferApprox;
+    generation_dynamics::Symbol = :DroopControlledInverterApprox;
     power_distribution::Symbol = :Bimodal;
     maxiters::Int64 = 1000; @assert maxiters > 0.0 "Maxiters has to be positive."
     P0::Float64 = 1.31; @assert maxiters > 0.0 "Reference power for power distribution has to be positive."
@@ -47,8 +47,8 @@ function validate_struct(pg_struct::PGGeneration)
         error("This option for the coupling is not supported. Please use coupling = :line_lengths or :homogenous instead.")
     end
 
-    if pg_struct.generation_dynamics != :SchifferApprox && pg_struct.generation_dynamics != :Schmietendorf && pg_struct.generation_dynamics != :Mixed  && pg_struct.generation_dynamics != :SwingEqLVS && pg_struct.generation_dynamics != :dVOCapprox #&& pg_struct.generation_dynamics != :SwingEq
-        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :SchifferApprox, :Schmietendorf, :SwingEqLVS, :SwingEq, :dVOCapprox or :Mixed instead.")
+    if pg_struct.generation_dynamics != :DroopControlledInverterApprox && pg_struct.generation_dynamics != :ThirdOrderMachineApprox && pg_struct.generation_dynamics != :Mixed  && pg_struct.generation_dynamics != :SwingEqLVS && pg_struct.generation_dynamics != :dVOCapprox #&& pg_struct.generation_dynamics != :SwingEq
+        error("This option for the nodal dynamics is not supported. Please use generation_dynamics = :DroopControlledInverterApprox, :ThirdOrderMachineApprox, :SwingEqLVS, :SwingEq, :dVOCapprox or :Mixed instead.")
     end
 
     try 
@@ -57,11 +57,11 @@ function validate_struct(pg_struct::PGGeneration)
         error("Please define the share of loads in the network.")
     end
 
-    if pg_struct.generation_dynamics == :Schmietendorf
+    if pg_struct.generation_dynamics == :ThirdOrderMachineApprox
         try 
-            pg_struct.nodal_shares[:schmietendorf_share]
+            pg_struct.nodal_shares[:ThirdOrderMachineApprox_share]
         catch err
-            error("Please define the share of Schmietendorf nodes in the network.")
+            error("Please define the share of ThirdOrderMachineApprox nodes in the network.")
         end
     end
 
@@ -73,25 +73,25 @@ function validate_struct(pg_struct::PGGeneration)
         end
     end
 
-    if pg_struct.generation_dynamics == :SchifferApprox
+    if pg_struct.generation_dynamics == :DroopControlledInverterApprox
         try 
-            pg_struct.nodal_shares[:schiffer_share]
+            pg_struct.nodal_shares[:DroopControlledInverterApprox_share]
         catch err
-            error("Please define the share of Schiffer nodes in the network.")
+            error("Please define the share of DroopControlledInverterApprox nodes in the network.")
         end
     end
 
     if pg_struct.generation_dynamics == :Mixed
         try 
-            pg_struct.nodal_shares[:schmietendorf_share]
+            pg_struct.nodal_shares[:ThirdOrderMachineApprox_share]
         catch err
-            error("Please define the share of Schmietendorf nodes in the network.")
+            error("Please define the share of ThirdOrderMachineApprox nodes in the network.")
         end
 
         try 
-            pg_struct.nodal_shares[:schiffer_share]
+            pg_struct.nodal_shares[:DroopControlledInverterApprox_share]
         catch err
-            error("Please define the share of Schiffer nodes in the network.")
+            error("Please define the share of DroopControlledInverterApprox nodes in the network.")
         end
     end
 
