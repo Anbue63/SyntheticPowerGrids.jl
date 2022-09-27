@@ -1,4 +1,4 @@
-@with_kw struct PGGeneration1
+@with_kw struct PGGeneration
     # Per Unit System Definition 
     P_base::Float64 = 100 * 10^6; @assert P_base > 0.0 "Base Power has to be positive."
     V_base::Float64 = 380 * 10^3; @assert V_base > 0.0 "Base Voltage has to be positive."
@@ -33,7 +33,7 @@
     P_vec::Vector = fill(nothing, num_nodes); @assert length(P_vec) == num_nodes "If a vector of powers is predefined, give a power set point for each node."
 end
 
-function validate_struct(pg_struct::PGGeneration1)
+function validate_struct(pg_struct::PGGeneration)
     if pg_struct.V_base != 380 * 10^3
         error("This voltage level is not supported. Please use V_base = 380 * 10^3 instead.")
     end
