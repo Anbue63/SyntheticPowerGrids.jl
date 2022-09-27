@@ -175,7 +175,7 @@ function construct_vertex(nf::NormalForm)
             v2 = abs2(u)          # Absolute squared voltage
         
             dx = (Aₓ + Bₓ * x + Cₓ * v2 + Gₓ * real(s) + Hₓ * imag(s)) ./ Mₓ
-            du = (Aᵤ + Bᵤ * x + Cᵤ * v2 + Gᵤ * real(s) + Hᵤ * imag(s)) * u
+            du = (Aᵤ + Bᵤ ⋅ x + Cᵤ * v2 + Gᵤ * real(s) + Hᵤ * imag(s)) * u
             
             # Splitting the complex parameters
             dz[1] = real(du)  
