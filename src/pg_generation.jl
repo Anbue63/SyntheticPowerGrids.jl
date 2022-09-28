@@ -5,15 +5,14 @@ Generates a random power grid using SyntheticNetworks and then turns it into a P
 """
 function random_PD_grid(pg_struct::PGGeneration)
     validate_struct(pg_struct) # Test if options given by the user are valid
-
+    
     # Accessing the data from the struct
     N = pg_struct.num_nodes                              # Number of nodes
-    n0, p, q, r, s, u = pg_struct.SyntheticNetworksParas # Parameters for SyntheticNetworks
-    Y_base = pg_struct.P_base / (pg_struct.V_base)^2     # Base admittance
     rejections = 0
     
     for i in 1:pg_struct.maxiters # maxiters until a stable grid is found 
         if pg_struct.embedded_graph === nothing
+            n0, p, q, r, s, u = pg_struct.SyntheticNetworksParas # Parameters for SyntheticNetworks
             pg_struct.embedded_graph = generate_graph(RandomPowerGrid(N, n0, p, q, r, s, u)) # Random power grid topology
         end
         
@@ -21,7 +20,7 @@ function random_PD_grid(pg_struct::PGGeneration)
             pg_struct.P_vec = get_power_distribution(pg_struct)
         end
 
-        lines = get_lines(pg_struct, Y_base) # Line dynamics
+        lines = get_lines(pg_struct) # Line dynamics
 
         op_ancillary = get_ancillary_operationpoint(pg_struct, lines)
         pg_struct.P_vec = op_ancillary[:, :p]

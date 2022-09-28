@@ -2,6 +2,7 @@
     # Per Unit System Definition 
     P_base::Float64 = 100 * 10^6; @assert P_base > 0.0 "Base Power has to be positive."
     V_base::Float64 = 380 * 10^3; @assert V_base > 0.0 "Base Voltage has to be positive."
+    Y_base::Float64 = P_base / (V_base)^2;  @assert Y_base > 0.0 "Base Admittance has to be positive."
 
     # Lines
     coupling::Symbol = :line_lengths
@@ -18,15 +19,19 @@
     nodal_shares::Dict; @assert sum(values(nodal_shares)) == 1.0 "The sum of all nodal share has to equal 1.0!"
 
     # Power 
+    # Dict
     power_distribution::Symbol = :Bimodal;
     P0::Float64 = 1.31; @assert maxiters > 0.0 "Reference power for power distribution has to be positive."
     
     # Set Points
+    # Todo also use a Dict here
+    #set_points = Dict(:P_vec => fill(nothing, num_nodes), :Q_vec => fill(nothing, num_nodes), :V_vec => ones(num_nodes))
     P_vec::Vector = fill(nothing, num_nodes); @assert length(P_vec) == num_nodes "Give a active power set point for each node."
     Q_vec::Vector = fill(nothing, num_nodes); @assert length(Q_vec) == num_nodes "Give a reactive power set point for each node."
     V_vec::Vector{Float64} = ones(num_nodes); @assert length(V_vec) == num_nodes "Give a voltage power set point for each node."
 
     # Topology
+    # use a dict as well ?
     SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0];
     embedded_graph = nothing
 
