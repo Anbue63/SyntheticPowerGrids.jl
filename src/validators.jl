@@ -147,8 +147,7 @@ end
 Assures that the power consumed by slack bus is below a threshold.
 """
 function validate_slack_bus_power(pg, op, threshold_power = 5.0)
-    slack_idx = findfirst(typeof.(pg.nodes) .== SlackAlgebraic)
-    slack_test = abs(op[slack_idx, :p]) < threshold_power
+    slack_test = abs(op[pg_struct.slack_idx, :p]) < threshold_power
 
     if slack_test == false
         println("The slack bus consumes to much power.")

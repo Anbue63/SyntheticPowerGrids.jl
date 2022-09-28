@@ -5,7 +5,7 @@ using SyntheticPowerGrids
 
 nodal_parameters = Dict(:η => 3 * 10^(-3), :α => 5.0,  :κ => π/2, :Ω => 0)
 nodal_shares = Dict(:load_share => 0.0, :dVOC_share => 1.0)
-pg_struct = PGGeneration(num_nodes = 10, nodal_parameters = nodal_parameters, nodal_shares = nodal_shares,  lines = :StaticLine, generation_dynamics = :dVOCapprox)
+pg_struct = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters, nodal_shares = nodal_shares,  lines = :StaticLine, generation_dynamics = :dVOCapprox)
 
 ##
 pg, op, embedded_graph, rejections = random_PD_grid(pg_struct)

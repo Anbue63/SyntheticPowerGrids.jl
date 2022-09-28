@@ -20,18 +20,21 @@
     # Power 
     power_distribution::Symbol = :Bimodal;
     P0::Float64 = 1.31; @assert maxiters > 0.0 "Reference power for power distribution has to be positive."
-    P_vec::Vector = fill(nothing, num_nodes); @assert length(P_vec) == num_nodes "If a vector of active powers is predefined, give a power set point for each node."
-    Q_vec::Vector = fill(nothing, num_nodes); @assert length(Q_vec) == num_nodes "If a vector of reactive powers is predefined, give a power set point for each node."
+    
+    # Set Points
+    P_vec::Vector = fill(nothing, num_nodes); @assert length(P_vec) == num_nodes "Give a active power set point for each node."
+    Q_vec::Vector = fill(nothing, num_nodes); @assert length(Q_vec) == num_nodes "Give a reactive power set point for each node."
+    V_vec::Vector{Float64} = ones(num_nodes); @assert length(V_vec) == num_nodes "Give a voltage power set point for each node."
 
     # Topology
     SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0];
     embedded_graph = nothing
 
     # Miscellaneous
-    V_ref::Float64 = 1.0; @assert V_ref > 0.0 "Reference voltage magnitude has to be positive."
     maxiters::Int64 = 1000; @assert maxiters > 0.0 "Maxiters has to be positive."
     validators::Bool = true
-    slack::Bool = true
+    slack = false
+    slack_idx::Int64 = num_nodes
 end
 
 function validate_struct(pg_struct::PGGeneration)
