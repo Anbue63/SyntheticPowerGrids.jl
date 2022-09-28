@@ -27,6 +27,9 @@ pg, op, embedded_graph, rejections = random_PD_grid(b)
 op[:, :p] # vector containing all nodal active powers
 # get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
 
+unique(typeof.(pg.lines))
+
+
 ##
 using OrdinaryDiffEq
 using PowerDynamics
