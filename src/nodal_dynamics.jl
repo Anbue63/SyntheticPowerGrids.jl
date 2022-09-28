@@ -5,41 +5,36 @@ get the nodal dynamics of the full power grid.
 - `pg`: Graph structure of the power grid
 - `op_ancillary`: Operation point of the helper grid
 """
-function get_nodes(pg, op_ancillary, pg_struct)
-    nodal_dyn_prob = rand(nv(pg.graph)) # Turns nodes into loads or PhaseAmplitudeOscillators
-    nodes = Array{Any}(undef, nv(pg.graph))
-    
+function get_nodes(pg_struct, op_ancillary)
+    nodal_dyn_prob = rand(pg_struct.num_nodes) # Turns nodes into loads or PhaseAmplitudeOscillators
+    nodes = Array{Any}(undef, pg_struct.num_nodes)
     load_share = pg_struct.nodal_shares[:load_share]
 
     if pg_struct.generation_dynamics == :DroopControlledInverterApprox 
         DroopControlledInverterApprox_share = pg_struct.nodal_shares[:DroopControlledInverterApprox_share]
 
-        nodes = get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + DroopControlledInverterApprox_share])
+        nodes = get_nodes_DroopControlledInverterApprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, [load_share, load_share + DroopControlledInverterApprox_share])
     elseif pg_struct.generation_dynamics == :ThirdOrderMachineApprox
         ThirdOrderMachineApprox_share = pg_struct.nodal_shares[:ThirdOrderMachineApprox_share]
 
-        nodes = get_nodes_ThirdOrderMachineApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + ThirdOrderMachineApprox_share])
+        nodes = get_nodes_ThirdOrderMachineApprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, [load_share, load_share + ThirdOrderMachineApprox_share])
     elseif pg_struct.generation_dynamics == :Mixed
         ThirdOrderMachineApprox_share = pg_struct.nodal_shares[:ThirdOrderMachineApprox_share]
         DroopControlledInverterApprox_share = pg_struct.nodal_shares[:DroopControlledInverterApprox_share]
 
-        nodes = get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + DroopControlledInverterApprox_share])
-        nodes = get_nodes_ThirdOrderMachineApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share + DroopControlledInverterApprox_share, load_share + DroopControlledInverterApprox_share + ThirdOrderMachineApprox_share])
+        nodes = get_nodes_DroopControlledInverterApprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, [load_share, load_share + DroopControlledInverterApprox_share])
+        nodes = get_nodes_ThirdOrderMachineApprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, [load_share + DroopControlledInverterApprox_share, load_share + DroopControlledInverterApprox_share + ThirdOrderMachineApprox_share])
     elseif pg_struct.generation_dynamics == :SwingEqLVS
         swingLVS_share =  pg_struct.nodal_shares[:swingLVS_share]
 
-        nodes = get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + swingLVS_share])
+        nodes = get_nodes_swingLVS(pg_struct, op_ancillary, nodes, nodal_dyn_prob, [load_share, load_share + swingLVS_share])
     elseif pg_struct.generation_dynamics == :dVOCapprox 
         dVOCapprox_share = pg_struct.nodal_shares[:dVOC_share]
 
-        nodes = get_nodes_dVOCapprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + dVOCapprox_share])
-    #elseif pg_struct.generation_dynamics == :SwingEq
-    #    swing_share =  pg_struct.nodal_shares[:swing_share]
-    
-    #    nodes = get_nodes_swing(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, [load_share, load_share + swing_share])
+        nodes = get_nodes_dVOCapprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, [load_share, load_share + dVOCapprox_share])
     end
     if pg_struct.loads == :PQAlgebraic
-        nodes = get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, load_share)
+        nodes = get_nodes_PQ(pg_struct, op_ancillary, nodes, nodal_dyn_prob, load_share)
     end
 
     if pg_struct.slack == true
@@ -48,7 +43,8 @@ function get_nodes(pg, op_ancillary, pg_struct)
     return nodes
 end
 
-function get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+function get_nodes_DroopControlledInverterApprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, threshold)
+    embedded_graph = pg_struct.embedded_graph
     nodal_parameters = pg_struct.nodal_parameters
 
     τ_P = nodal_parameters[:τ_P] # Time constant low pass filter measuring the active power
@@ -57,7 +53,7 @@ function get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_str
     K_P = nodal_parameters[:K_P] # Gain constant low pass filter measuring the active power
     K_Q = nodal_parameters[:K_Q] # Gain constant low pass filter measuring the reactive power
     
-    for n in 1:nv(pg.graph)
+    for n in 1:nv(embedded_graph.graph)
         if nodal_dyn_prob[n] > threshold[1]  # Grid Forming
             if threshold[2] >= nodal_dyn_prob[n] 
                 β = rand(1:length(nodal_parameters[:τ_P])) # Randomly chooses one of three possible time constant for the low pass filter measuring the active power
@@ -70,14 +66,15 @@ function get_nodes_DroopControlledInverterApprox(pg, op_ancillary, nodes, pg_str
     return nodes
 end
 
-function get_nodes_ThirdOrderMachineApprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+function get_nodes_ThirdOrderMachineApprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, threshold)
+    embedded_graph = pg_struct.embedded_graph
     nodal_parameters = pg_struct.nodal_parameters
 
     X = nodal_parameters[:X] # Reactance
     α = nodal_parameters[:α] # Voltage dynamics time constant
     γ = nodal_parameters[:γ] # Damping Coefficient
     
-    for n in 1:nv(pg.graph)
+    for n in 1:nv(embedded_graph.graph)
         if nodal_dyn_prob[n] > threshold[1] # Third Order Machine
             if threshold[2] >= nodal_dyn_prob[n] 
                 E_set = op_ancillary[n, :v]
@@ -92,8 +89,9 @@ function get_nodes_ThirdOrderMachineApprox(pg, op_ancillary, nodes, pg_struct, n
     return nodes
 end
 
-function get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, threshold)
-    for n in 1:nv(pg.graph)
+function get_nodes_PQ(pg_struct, op_ancillary, nodes, nodal_dyn_prob, threshold)
+    embedded_graph = pg_struct.embedded_graph
+    for n in 1:nv(embedded_graph.graph)
         if nodal_dyn_prob[n] < threshold # Grid following / loads
             nodes[n] = PQAlgebraic(P = op_ancillary[n, :p], Q = op_ancillary[n, :q]) 
         end
@@ -101,8 +99,9 @@ function get_nodes_PQ(pg, op_ancillary, nodes, nodal_dyn_prob, threshold)
     return nodes
 end
 
-function get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+function get_nodes_swingLVS(pg_struct, op_ancillary, nodes, nodal_dyn_prob, threshold)
     nodal_parameters = pg_struct.nodal_parameters
+    embedded_graph = pg_struct.embedded_graph
 
     H = nodal_parameters[:H] # Inertia Constant
     Ω = nodal_parameters[:Ω] # Rated Frequency
@@ -110,7 +109,7 @@ function get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, 
     D = nodal_parameters[:D] # Damping Coefficient
     Γ = nodal_parameters[:Γ] # Voltage stability Coefficient
 
-    for n in 1:nv(pg.graph)
+    for n in 1:nv(embedded_graph.graph)
         if nodal_dyn_prob[n] > threshold[1]
             if threshold[2] >= nodal_dyn_prob[n] 
                 nodes[n] = SwingEqLVS(H = H, P = op_ancillary[n, :p], D = D, Ω = Ω, Γ = Γ, V = V)
@@ -120,15 +119,16 @@ function get_nodes_swingLVS(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, 
     return nodes
 end
 
-function get_nodes_dVOCapprox(pg, op_ancillary, nodes, pg_struct, nodal_dyn_prob, threshold)
+function get_nodes_dVOCapprox(pg_struct, op_ancillary, nodes, nodal_dyn_prob, threshold)
     nodal_parameters = pg_struct.nodal_parameters
+    embedded_graph = pg_struct.embedded_graph
 
     Ω = nodal_parameters[:Ω] # Rated Frequency
     η = nodal_parameters[:η] # positive control parameter
     α = nodal_parameters[:α] # positive control parameter
     κ = nodal_parameters[:κ] # uniform complex phase
 
-    for n in 1:nv(pg.graph)
+    for n in 1:nv(embedded_graph.graph)
         if nodal_dyn_prob[n] > threshold[1]
             if threshold[2] >= nodal_dyn_prob[n]
                 P_set = op_ancillary[n, :p] # active power set point

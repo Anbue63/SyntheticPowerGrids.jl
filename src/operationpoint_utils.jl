@@ -1,5 +1,5 @@
 """
-    get_ancillary_grid(pg, P_vec, lines)
+    get_ancillary_operationpoint(pg, P_vec, lines)
 
 get an Ancillary Power Grid with the same power flow on the lines as the full power grid.
 We use PV-Nodes to find the reactive power at the nodes with results in power grids where the voltage magnitude V is equal to the Reference voltage magnitude V_r.
@@ -9,10 +9,10 @@ We use PV-Nodes to find the reactive power at the nodes with results in power gr
 - `lines`: Line dynamics of the power grid
 - `V_r`: Reference voltage magnitude. In [p.u.] system the default is V_r = 1.0
 """
-function get_ancillary_grid(pg, P_vec, lines, V_r = 1.0)
+function get_ancillary_operationpoint(pg, P_vec, lines, V_r = 1.0)
     nodes = Array{Any}(undef, nv(pg.graph))
 
-    # get Ancillary Power Grid
+    # Get Ancillary Power Grid
     for n in 1:nv(pg.graph)-1
         nodes[n] = PVAlgebraic(P = P_vec[n], V = V_r)
     end

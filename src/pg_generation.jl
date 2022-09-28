@@ -14,9 +14,7 @@ function random_PD_grid(pg_struct::PGGeneration)
     
     for i in 1:pg_struct.maxiters # maxiters until a stable grid is found 
         if pg_struct.embedded_graph === nothing
-            embedded_graph = generate_graph(RandomPowerGrid(N, n0, p, q, r, s, u)) # Random power grid topology
-        else 
-            embedded_graph = pg_struct.embedded_graph
+            pg_struct.embedded_graph = generate_graph(RandomPowerGrid(N, n0, p, q, r, s, u)) # Random power grid topology
         end
         
         if typeof(pg_struct.P_vec) == Vector{Nothing} 
@@ -25,9 +23,13 @@ function random_PD_grid(pg_struct::PGGeneration)
             P_vec = pg_struct.P_vec
         end
 
-        lines = get_lines(embedded_graph, pg_struct, Y_base, embedded_graph) # Line dynamics
-        op_ancillary = get_ancillary_grid(embedded_graph, P_vec, lines)  # Operation point of Ancillary power grid
-        nodes = get_nodes(embedded_graph, op_ancillary, pg_struct)       # Nodal dynamics
+        lines = get_lines(pg_struct, Y_base) # Line dynamics
+
+        if typeof(pg_struct.Q_vec) == Vector{Nothing} 
+            op_ancillary = get_ancillary_operationpoint(pg_struct.embedded_graph, P_vec, lines)  # Operation point of Ancillary power grid
+        end
+
+        nodes = get_nodes(pg_struct, op_ancillary)                 # Nodal dynamics
 
         pg = PowerGrid(nodes, lines)
         rpg = rhs(pg)
@@ -37,7 +39,7 @@ function random_PD_grid(pg_struct::PGGeneration)
 
         if pg_struct.validators == true              # Sanity checks before returning
             if validate_power_grid(pg, op, pg_struct) == true
-                return pg, op, embedded_graph, rejections
+                return pg, op, pg_struct.embedded_graph, rejections
             end
         else
             return pg, op, embedded_graph, rejections

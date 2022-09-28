@@ -1,4 +1,4 @@
-@with_kw struct PGGeneration
+@with_kw mutable struct PGGeneration
     # Per Unit System Definition 
     P_base::Float64 = 100 * 10^6; @assert P_base > 0.0 "Base Power has to be positive."
     V_base::Float64 = 380 * 10^3; @assert V_base > 0.0 "Base Voltage has to be positive."
@@ -16,21 +16,22 @@
     num_nodes::Int64; @assert num_nodes > 0.0 "Number of nodes can not be negative."
     nodal_parameters::Dict;
     nodal_shares::Dict; @assert sum(values(nodal_shares)) == 1.0 "The sum of all nodal share has to equal 1.0!"
-    slack::Bool = true
 
     # Power 
     power_distribution::Symbol = :Bimodal;
-    maxiters::Int64 = 1000; @assert maxiters > 0.0 "Maxiters has to be positive."
     P0::Float64 = 1.31; @assert maxiters > 0.0 "Reference power for power distribution has to be positive."
-    
+    P_vec::Vector = fill(nothing, num_nodes); @assert length(P_vec) == num_nodes "If a vector of active powers is predefined, give a power set point for each node."
+    Q_vec::Vector = fill(nothing, num_nodes); @assert length(Q_vec) == num_nodes "If a vector of reactive powers is predefined, give a power set point for each node."
+
     # Topology
     SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0];
     embedded_graph = nothing
 
     # Miscellaneous
     V_ref::Float64 = 1.0; @assert V_ref > 0.0 "Reference voltage magnitude has to be positive."
-    validators::Bool = true;
-    P_vec::Vector = fill(nothing, num_nodes); @assert length(P_vec) == num_nodes "If a vector of powers is predefined, give a power set point for each node."
+    maxiters::Int64 = 1000; @assert maxiters > 0.0 "Maxiters has to be positive."
+    validators::Bool = true
+    slack::Bool = true
 end
 
 function validate_struct(pg_struct::PGGeneration)
