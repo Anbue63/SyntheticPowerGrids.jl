@@ -27,15 +27,20 @@ end
     own_graph = generate_graph(RandomPowerGrid(num_nodes, [1, 1/5, 3/10, 1/3, 1/10, 0.0]...)) # Generate embedded graph
     P_vec = rand(MersenneTwister(42), num_nodes) # Random Power Distribution
     P_vec .-= sum(P_vec) / (num_nodes)  # Assure power balance
-
+    
+    e = edges(own_graph.graph)
+    cables_vec = 3 * ones(length(e))
+    
     L = get_effective_distances(own_graph; mean_len_km = 42, shortest_line_km = 0.06) # Effective spacial distances
-    Y, Y_shunt = get_line_admittance_matrix(own_graph, L)                             # Admittances and shunts
 
-    edge_parameters = Dict(:Y => Y, :Y_shunt => Y_shunt) 
     nodal_parameters = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0])
     nodal_shares = Dict(:DroopControlledInverterApprox_share => 1.0, :load_share => 0.0)
 
-    x = PGGeneration(num_nodes = num_nodes, nodal_parameters = nodal_parameters, nodal_shares = nodal_shares, P_vec = P_vec, embedded_graph = own_graph, coupling = :predefined, edge_parameters = edge_parameters, lines = :StaticLine, slack = false)
+    x = PGGeneration(num_nodes = num_nodes, cables_vec = cables_vec, nodal_parameters = nodal_parameters, nodal_shares = nodal_shares, P_vec = P_vec, embedded_graph = own_graph, coupling = :predefined, lines = :StaticLine, slack = false)
+    Y, Y_shunt = get_line_admittance_matrix(x, L)                             # Admittances and shunts
+    x.edge_parameters = Dict(:Y => Y, :Y_shunt => Y_shunt) 
+    
+    
     pg, op, embedded_graph, rejections = random_PD_grid(x)
 
     @test length(pg.nodes) == num_nodes                      # Correct number of nodes has been created

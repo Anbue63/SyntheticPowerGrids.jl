@@ -20,6 +20,11 @@ function random_PD_grid(pg_struct::PGGeneration)
             pg_struct.P_vec = get_power_distribution(pg_struct)
         end
 
+        if pg_struct.cables_vec === nothing
+            e = edges(pg_struct.embedded_graph.graph)
+            pg_struct.cables_vec = 3 * ones(length(e))
+        end
+
         lines = get_lines(pg_struct) # Line dynamics
 
         op_ancillary = get_ancillary_operationpoint(pg_struct, lines)

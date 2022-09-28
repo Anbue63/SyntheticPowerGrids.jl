@@ -8,9 +8,10 @@
     coupling::Symbol = :line_lengths
     lines::Symbol = :PiModelLine;
     edge_parameters::Dict = Dict();
-    shortest_line_km::Float64 = 0.06; @assert mean_len_km >= 0.0 "The shortest line length has to be not be negative."
+    shortest_line_km::Float64 = 0.06; @assert mean_len_km >= 0.0 "The shortest line length can not be negative."
     mean_len_km::Float64 = 37.12856121212121; @assert mean_len_km > 0.0 "The mean line length has to be bigger than 0.0."
-
+    wires_typical::Int64 = 4; @assert wires_typical > 0 "The typical number of wires has to be a positive integer." # Typical number of wires in the german 380kV transmission system
+    
     # Nodes
     loads::Symbol = :PQAlgebraic;
     generation_dynamics::Symbol = :DroopControlledInverterApprox;
@@ -40,6 +41,7 @@
     validators::Bool = true
     slack = false
     slack_idx::Int64 = num_nodes
+    cables_vec = nothing
 end
 
 function validate_struct(pg_struct::PGGeneration)
