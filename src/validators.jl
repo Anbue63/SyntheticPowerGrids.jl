@@ -3,19 +3,19 @@
 
 Performs a variety of test to assure that the dynamical system can represent a meaningful power grid.
 """
-function validate_power_grid(pg, op, pg_struct)
-    if validate_voltage_magnitude(op) == true                             # Voltage magnitudes in the operation point
+function validate_power_grid(pg::PowerGrid, op, pg_struct)
+    if validate_voltage_magnitude(op) == true                   # Voltage magnitudes in the operation point
         if validate_power_flow_on_lines(op, pg_struct) == true  # Power flow on the lines
             #stable = test_eigenvalues(pg, op)             
             stable = small_signal_stability_analysis(rhs(pg), op.vec) # Operation point is linearly stable
             if stable == true 
-                if pg_struct.slack == true
-                    if validate_slack_bus_power(pg, op) == true           # Power consumption of the slack bus
-                        return true                             # All test have been passed. The power grid can be returned
-                    end
-                else
-                    return true 
-                end
+                #if pg_struct.slack == true
+                #    if validate_slack_bus_power(pg, op) == true # Power consumption of the slack bus
+                #        return true                             # All test have been passed. The power grid can be returned
+                #    end
+                #else
+                return true 
+                #end
             end
         end
     end

@@ -5,7 +5,7 @@ get the lines dynamics of the power grid.
 - `pg`: Graph structure of the power grid
 - `Y_base`: Base admittance of the power system for [p.u.] conversion
 """
-function get_lines(pg_struct, Y_base)
+function get_lines(pg_struct::PGGeneration, Y_base)
     embedded_graph = pg_struct.embedded_graph
 
     # Different possible coupling types
@@ -37,7 +37,7 @@ end
    get_lines_static(pg, Y, Y_base)
 
 get the lines dynamics of the power grid.
-- `pg`: Graph structure of the power grid
+- `embedded_graph`: Graph structure of the power grid
 - `Y`:  Line admittance matrix, Entry's are in [Ohm] and depend on the line length
 - `Y_base`: Base admittance of the power system for [p.u.] conversion
 """

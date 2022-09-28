@@ -18,24 +18,22 @@ function random_PD_grid(pg_struct::PGGeneration)
         end
         
         if typeof(pg_struct.P_vec) == Vector{Nothing} 
-            P_vec = get_power_distribution(pg_struct)
-        else    
-            P_vec = pg_struct.P_vec
+            pg_struct.P_vec = get_power_distribution(pg_struct)
         end
 
         lines = get_lines(pg_struct, Y_base) # Line dynamics
 
+        S_vec = get_ancillary_apparent_power(pg_struct, lines)
+        pg_struct.P_vec = real.(S_vec)
+
         if typeof(pg_struct.Q_vec) == Vector{Nothing} 
-            op_ancillary = get_ancillary_operationpoint(pg_struct.embedded_graph, P_vec, lines)  # Operation point of Ancillary power grid
+            pg_struct.Q_vec = imag.(S_vec) # Reactive Power of the ancillary power grid
         end
 
-        nodes = get_nodes(pg_struct, op_ancillary)                 # Nodal dynamics
-
+        nodes = get_nodes(pg_struct) # Nodal dynamics
         pg = PowerGrid(nodes, lines)
-        rpg = rhs(pg)
 
-        ic_guess = get_initial_guess(rpg, op_ancillary)                # Initial guess for rootfind
-        op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) #, solve_powerflow = true) # find operation point of the full power grid
+        op = find_operationpoint(pg, sol_method = :rootfind) #, solve_powerflow = true) # find operation point of the full power grid
 
         if pg_struct.validators == true              # Sanity checks before returning
             if validate_power_grid(pg, op, pg_struct) == true

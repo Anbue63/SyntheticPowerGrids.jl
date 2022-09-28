@@ -11,6 +11,7 @@ import SyntheticPowerGrids.get_line_admittance_matrix
 num_nodes = 10
 own_graph = generate_graph(RandomPowerGrid(num_nodes, [1, 1/5, 3/10, 1/3, 1/10, 0.0]...))
 P_vec = rand(num_nodes)
+P_vec .-= sum(P_vec) / (num_nodes)
 
 L = get_effective_distances(own_graph; mean_len_km = 42, shortest_line_km = 0.06)
 Y, Y_shunt = get_line_admittance_matrix(own_graph, L)

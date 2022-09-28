@@ -26,9 +26,9 @@ module SyntheticPowerGrids
 
     include("validators.jl")
 
-    include("operationpoint_utils.jl")
+    include("reactive_power.jl")
 
-    include("power_distribution.jl")
+    include("active_power.jl")
 
     include("line_dynamics.jl")
     

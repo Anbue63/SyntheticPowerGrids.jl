@@ -1,19 +1,20 @@
 """
-    get_ancillary_operationpoint(pg, P_vec, lines)
+    get_ancillary_apparent_power(pg_struct, lines, V_r = 1.0)
 
-get an Ancillary Power Grid with the same power flow on the lines as the full power grid.
+Get an Ancillary Power Grid with the same power flow on the lines as the full power grid.
 We use PV-Nodes to find the reactive power at the nodes with results in power grids where the voltage magnitude V is equal to the Reference voltage magnitude V_r.
 
-- `pg`: Graph structure of the power grid
-- `P_vec`: Vector containing the power consumption / generation at each node
+- `pg_struct`: Struct containing all data of the power grid
 - `lines`: Line dynamics of the power grid
 - `V_r`: Reference voltage magnitude. In [p.u.] system the default is V_r = 1.0
 """
-function get_ancillary_operationpoint(pg, P_vec, lines, V_r = 1.0)
-    nodes = Array{Any}(undef, nv(pg.graph))
+function get_ancillary_apparent_power(pg_struct, lines, V_r = 1.0)
+    P_vec = pg_struct.P_vec
+    num_nodes = pg_struct.num_nodes
+    nodes = Array{Any}(undef, num_nodes)
 
     # Get Ancillary Power Grid
-    for n in 1:nv(pg.graph)-1
+    for n in 1:(num_nodes - 1)
         nodes[n] = PVAlgebraic(P = P_vec[n], V = V_r)
     end
     nodes[end] = SlackAlgebraic(U = complex(1.0))
@@ -21,7 +22,7 @@ function get_ancillary_operationpoint(pg, P_vec, lines, V_r = 1.0)
     pg_cons = PowerGrid(nodes, lines)
     # Find the operation point of Ancillary grid -> we need the reactive power at the nodes
     op = find_operationpoint(pg_cons, sol_method=:rootfind)#, solve_powerflow = true)
-    return op
+    return op[:, :s]
 end
 
 """
