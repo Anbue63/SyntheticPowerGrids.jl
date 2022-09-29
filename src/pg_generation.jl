@@ -13,23 +13,33 @@ function random_PD_grid(pg_struct::PGGeneration)
     rejections = 0
     
     for i in 1:pg_struct.maxiters # maxiters until a stable grid is found 
-        embedded_graph = generate_graph(RandomPowerGrid(N, n0, p, q, r, s, u)) # Random power grid topology
+        if pg_struct.embedded_graph === nothing
+            pg_struct.embedded_graph = generate_graph(RandomPowerGrid(N, n0, p, q, r, s, u)) # Random power grid topology
+        end
         
-        P_vec = get_power_distribution(pg_struct)       
+        if typeof(pg_struct.P_vec) == Vector{Nothing} 
+            pg_struct.P_vec = get_power_distribution(pg_struct)
+        end
 
-        lines = get_lines(embedded_graph, pg_struct, Y_base, embedded_graph) # Line dynamics
-        op_ancillary = get_ancillary_grid(embedded_graph, P_vec, lines)  # Operation point of Ancillary power grid
-        nodes = get_nodes(embedded_graph, op_ancillary, pg_struct)       # Nodal dynamics
+        lines = get_lines(pg_struct, Y_base) # Line dynamics
 
+        op_ancillary = get_ancillary_operationpoint(pg_struct, lines)
+        pg_struct.P_vec = op_ancillary[:, :p]
+        pg_struct.V_vec = op_ancillary[:, :v]
+
+        if typeof(pg_struct.Q_vec) == Vector{Nothing} 
+            pg_struct.Q_vec = op_ancillary[:, :q] # Reactive Power of the ancillary power grid
+        end
+
+        nodes = get_nodes(pg_struct) # Nodal dynamics
         pg = PowerGrid(nodes, lines)
-        rpg = rhs(pg)
+        ic_guess = get_initial_guess(pg, op_ancillary)
 
-        ic_guess = get_initial_guess(rpg, op_ancillary)                # Initial guess for rootfind
         op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) #, solve_powerflow = true) # find operation point of the full power grid
 
-        if pg_struct.validators == true              # Sanity checks before returning
+        if pg_struct.validators == true # Sanity checks before returning
             if validate_power_grid(pg, op, pg_struct) == true
-                return pg, op, embedded_graph, rejections
+                return pg, op, pg_struct.embedded_graph, rejections
             end
         else
             return pg, op, embedded_graph, rejections

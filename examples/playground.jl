@@ -16,7 +16,7 @@ nodal_shares_d = Dict(:load_share => 0.0, :swingLVS_share => 1.0)
 edge_parameters = Dict(:K => -10im)
 
 a = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_a, loads = :PQAlgebraic, lines = :StaticLine, nodal_shares = nodal_shares_a)
-b = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_b, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :ThirdOrderMachineApprox, nodal_shares = nodal_shares_b)
+b = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_b, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :ThirdOrderMachineApprox, nodal_shares = nodal_shares_b, maxiters = 10, slack = true)
 c = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_c, loads = :PQAlgebraic, lines = :PiModelLine, generation_dynamics = :Mixed, nodal_shares = nodal_shares_c)
 d = PGGeneration(num_nodes = 100, power_distribution = :Plus_Minus_1, nodal_parameters = nodal_parameters_d, loads = :PQAlgebraic, lines = :StaticLine, generation_dynamics = :SwingEqLVS, coupling = :homogenous, edge_parameters = edge_parameters, nodal_shares = nodal_shares_d, slack = false)
 
@@ -26,6 +26,9 @@ for_mehrnaz = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_
 pg, op, embedded_graph, rejections = random_PD_grid(b)
 op[:, :p] # vector containing all nodal active powers
 # get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
+
+unique(typeof.(pg.lines))
+
 
 ##
 using OrdinaryDiffEq

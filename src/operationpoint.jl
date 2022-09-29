@@ -1,22 +1,24 @@
 """
-    get_ancillary_grid(pg, P_vec, lines)
+    get_ancillary_operationpoint(pg_struct, lines, V_r = 1.0)
 
-get an Ancillary Power Grid with the same power flow on the lines as the full power grid.
+Get an Ancillary Power Grid with the same power flow on the lines as the full power grid.
 We use PV-Nodes to find the reactive power at the nodes with results in power grids where the voltage magnitude V is equal to the Reference voltage magnitude V_r.
 
-- `pg`: Graph structure of the power grid
-- `P_vec`: Vector containing the power consumption / generation at each node
+- `pg_struct`: Struct containing all data of the power grid
 - `lines`: Line dynamics of the power grid
-- `V_r`: Reference voltage magnitude. In [p.u.] system the default is V_r = 1.0
 """
-function get_ancillary_grid(pg, P_vec, lines, V_r = 1.0)
-    nodes = Array{Any}(undef, nv(pg.graph))
+function get_ancillary_operationpoint(pg_struct, lines)
+    P_vec = pg_struct.P_vec
+    V_vec = pg_struct.V_vec
 
-    # get Ancillary Power Grid
-    for n in 1:nv(pg.graph)-1
-        nodes[n] = PVAlgebraic(P = P_vec[n], V = V_r)
+    num_nodes = pg_struct.num_nodes
+    nodes = Array{Any}(undef, num_nodes)
+
+    # Get Ancillary Power Grid
+    for n in 1:num_nodes
+        nodes[n] = PVAlgebraic(P = P_vec[n], V = V_vec[n])
     end
-    nodes[end] = SlackAlgebraic(U = complex(1.0))
+    nodes[pg_struct.slack_idx] = SlackAlgebraic(U = complex(V_vec[pg_struct.slack_idx]))
     
     pg_cons = PowerGrid(nodes, lines)
     # Find the operation point of Ancillary grid -> we need the reactive power at the nodes
@@ -31,8 +33,9 @@ Initial guess for the operation point search of PowerDynamics.jl for the Operati
 - `rpg`: Right-Hand side function of the power grid
 - `op_ancillary`: Operation point of the helper grid
 """
-function get_initial_guess(rpg, op_ancillary)
-    
+function get_initial_guess(pg, op_ancillary)
+    rpg = rhs(pg)
+
     ic_guess = zeros(length(rpg.syms))
     u_r_idx = findall(map(x -> occursin("u_r", string(x)), rpg.syms))
     u_i_idx = findall(map(x -> occursin("u_i", string(x)), rpg.syms))
