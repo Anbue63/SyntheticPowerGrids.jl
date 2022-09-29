@@ -20,14 +20,22 @@ function random_PD_grid(pg_struct::PGGeneration)
             pg_struct.P_vec = get_power_distribution(pg_struct)
         end
 
-        if pg_struct.cables_vec === nothing
+        if pg_struct.cables_vec === nothing           # If there is no predefined number of cables use typical number for all lines
             e = edges(pg_struct.embedded_graph.graph)
-            pg_struct.cables_vec = 3 * ones(length(e))
+            pg_struct.cables_vec = 3 * ones(length(e)) 
         end
 
-        lines = get_lines(pg_struct) # Line dynamics
+        if pg_struct.probabilistic_capacity_expansion == true # Use a probabilistic load flow to expand the capacity such that it full fills all scenarios
+            if pg_struct.dist_load === nothing
+                pg_struct.dist_load = nodal_power_normal_distribution(pg_struct.P_vec, pg_struct.num_nodes) # Default leads to 
+            end
+            pg_struct, lines = probabilistic_capacity_expansion(pg_struct, pg_struct.dist_load)
+        else
+            lines = get_lines(pg_struct) # Line dynamics
+        end
 
-        op_ancillary = get_ancillary_operationpoint(pg_struct, lines)
+        op_ancillary = get_ancillary_operationpoint(pg_struct.P_vec, pg_struct.V_vec, pg_struct.num_nodes, pg_struct.slack_idx, lines)
+        
         pg_struct.P_vec = op_ancillary[:, :p]
         pg_struct.V_vec = op_ancillary[:, :v]
 

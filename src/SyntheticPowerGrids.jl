@@ -32,4 +32,6 @@ module SyntheticPowerGrids
     include("line_dynamics.jl")
     
     include("nodal_dynamics.jl")
+
+    include("probabilistic_capacity_expansion.jl")
 end

@@ -42,6 +42,8 @@
     slack = false
     slack_idx::Int64 = num_nodes
     cables_vec = nothing
+    probabilistic_capacity_expansion::Bool = false
+    dist_load = nothing
 end
 
 function validate_struct(pg_struct::PGGeneration)
@@ -132,6 +134,12 @@ function validate_struct(pg_struct::PGGeneration)
     if typeof(pg_struct.P_vec) != Vector{Nothing}
         if typeof(pg_struct.P_vec) != Vector{Float64}
             error("Use Vector{Float64} for predefined power vectors.")
+        end
+    end
+
+    if pg_struct.dist_load !== nothing
+        if length(pg_struct.dist_load) != pg_struct.num_nodes
+            error("Please give a probability for each nodal set point.")
         end
     end
 

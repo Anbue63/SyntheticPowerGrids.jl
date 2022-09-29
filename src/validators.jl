@@ -5,7 +5,7 @@ Performs a variety of test to assure that the dynamical system can represent a m
 """
 function validate_power_grid(pg::PowerGrid, op, pg_struct)
     if validate_voltage_magnitude(op) == true                   # Voltage magnitudes in the operation point
-        if validate_power_flow_on_lines(op, pg_struct) == true  # Power flow on the lines
+        if validate_power_flow_on_lines(op, pg_struct)[1] == true  # Power flow on the lines
             #stable = test_eigenvalues(pg, op)             
             stable = small_signal_stability_analysis(rhs(pg), op.vec) # Operation point is linearly stable
             if stable == true 
@@ -62,7 +62,7 @@ function validate_power_flow_on_lines(state::State, pg_struct)
     if save_network == false
         println("The power lines are overloaded.")
     end
-    return save_network
+    return save_network, save_flow
 end
 
 """

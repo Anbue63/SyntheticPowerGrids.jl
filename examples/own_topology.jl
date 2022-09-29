@@ -1,7 +1,6 @@
 #using Pkg
 #Pkg.activate(@__DIR__)
 
-using Revise
 using SyntheticPowerGrids
 using SyntheticNetworks
 import SyntheticPowerGrids.get_line_admittance_matrix
