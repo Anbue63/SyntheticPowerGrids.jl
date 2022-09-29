@@ -44,6 +44,7 @@
     cables_vec = nothing
     probabilistic_capacity_expansion::Bool = false
     dist_load = nothing
+    num_tries::Int64 = 100
 end
 
 function validate_struct(pg_struct::PGGeneration)

@@ -1,10 +1,9 @@
 function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load)
     num_nodes = pg_struct.num_nodes
-    num_tries = 100
     lines = get_lines(pg_struct)
 
     # Run over all scenarios
-    for k in 1:num_tries
+    for k in 1:pg_struct.num_tries
         P_set_prob = map(node -> rand(dist_load[node]), 1:num_nodes) # Sample new set points from the Distributions
         P_set_prob .-= sum(P_set_prob) / (num_nodes)                       # Assure power balance
 

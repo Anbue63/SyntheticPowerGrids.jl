@@ -17,7 +17,7 @@ P_vec = rand(seed, num_nodes) # Random Power Distribution
 P_vec .-= sum(P_vec) / (num_nodes)  # Assure power balance
 
 e = edges(own_graph.graph)
-cables_vec = 3 * ones(length(e))
+cables_vec = 3 * ones(Int, length(e))
 
 L = get_effective_distances(own_graph; mean_len_km = 42, shortest_line_km = 0.06) # Effective spacial distances
 
