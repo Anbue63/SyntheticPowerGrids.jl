@@ -22,7 +22,7 @@
     # Power 
     # Dict
     power_distribution::Symbol = :Bimodal;
-    P0::Float64 = 1.31; @assert maxiters > 0.0 "Reference power for power distribution has to be positive."
+    P0::Float64 = 1.31; @assert P0 > 0.0 "Reference power for power distribution has to be positive."
     
     # Set Points
     # Todo also use a Dict here
@@ -44,6 +44,7 @@
     cables_vec = nothing
     probabilistic_capacity_expansion::Bool = false
     dist_load = nothing
+    dist_args = nothing
     num_tries::Int64 = 100
 end
 
@@ -135,12 +136,6 @@ function validate_struct(pg_struct::PGGeneration)
     if typeof(pg_struct.P_vec) != Vector{Nothing}
         if typeof(pg_struct.P_vec) != Vector{Float64}
             error("Use Vector{Float64} for predefined power vectors.")
-        end
-    end
-
-    if pg_struct.dist_load !== nothing
-        if length(pg_struct.dist_load) != pg_struct.num_nodes
-            error("Please give a probability for each nodal set point.")
         end
     end
 

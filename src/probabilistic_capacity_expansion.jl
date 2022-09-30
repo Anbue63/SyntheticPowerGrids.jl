@@ -1,11 +1,10 @@
-function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load)
+function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, dist_args)
     num_nodes = pg_struct.num_nodes
     lines = get_lines(pg_struct)
 
     # Run over all scenarios
     for k in 1:pg_struct.num_tries
-        P_set_prob = map(node -> rand(dist_load[node]), 1:num_nodes) # Sample new set points from the Distributions
-        P_set_prob .-= sum(P_set_prob) / (num_nodes)                       # Assure power balance
+        P_set_prob = dist_load(dist_args...) # Sample new set points from the Distributions
 
         op_prob = get_ancillary_operationpoint(P_set_prob, pg_struct.V_vec, num_nodes, pg_struct.slack_idx, lines)
         save_network, save_flow = validate_power_flow_on_lines(op_prob, pg_struct)
@@ -26,15 +25,25 @@ function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load)
     return pg_struct, lines
 end
 
-function nodal_power_normal_distribution(P_set, num_nodes)
-    μ = P_set
-    σ = abs.(P_set)
+function consumer_producer_nodal_power(P_set, num_nodes)
+    μ = 1
+    σ = 1/6
+    
+    net_producer = findall(P_set .> 0.0)
+    net_consumer = findall(P_set .< 0.0)
 
-    dist_load = Vector{Any}(undef, num_nodes)
+    on_peak_off_peak_factor = rand(Normal(μ, σ))
+    P_set_new = Vector{Float64}(undef, num_nodes)
 
     for n in 1:num_nodes
-        dist_load[n] = Normal(μ[n], σ[n]) 
+        if n ∈ net_consumer
+            P_set_new[n] = on_peak_off_peak_factor * P_set[n]
+        elseif n ∈ net_producer
+            P_set_new[n] = rand(Normal(μ, σ)) * P_set[n]
+        end
     end
 
-    return dist_load
+    P_set_new .-= sum(P_set_new) / (num_nodes)  # Assure power balance  
+    
+    return P_set_new
 end

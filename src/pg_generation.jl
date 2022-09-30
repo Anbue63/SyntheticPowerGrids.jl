@@ -27,9 +27,10 @@ function random_PD_grid(pg_struct::PGGeneration)
 
         if pg_struct.probabilistic_capacity_expansion == true # Use a probabilistic load flow to expand the capacity such that it full fills all scenarios
             if pg_struct.dist_load === nothing
-                pg_struct.dist_load = nodal_power_normal_distribution(pg_struct.P_vec, pg_struct.num_nodes) # Default leads to 
+                pg_struct.dist_load = consumer_producer_nodal_power # Default leads to 
+                pg_struct.dist_args = [pg_struct.P_vec, pg_struct.num_nodes]
             end
-            pg_struct, lines = probabilistic_capacity_expansion(pg_struct, pg_struct.dist_load)
+            pg_struct, lines = probabilistic_capacity_expansion(pg_struct, pg_struct.dist_load, pg_struct.dist_args)
         else
             lines = get_lines(pg_struct) # Line dynamics
         end
@@ -51,10 +52,10 @@ function random_PD_grid(pg_struct::PGGeneration)
 
         if pg_struct.validators == true # Sanity checks before returning
             if validate_power_grid(pg, op, pg_struct) == true
-                return pg, op, pg_struct.embedded_graph, rejections
+                return pg, op, pg_struct, rejections
             end
         else
-            return pg, op, embedded_graph, rejections
+            return pg, op, pg_struct, rejections
         end
         rejections += 1
     end
