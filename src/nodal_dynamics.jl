@@ -1,3 +1,33 @@
+get_load(P,Q,V, pars) = PQAlgebraic(P = P, Q = Q)
+get_normal_form(P,Q,V, pars) = SwingEqLVS(H = 1., P = P, D = 0.1, Ω = 50., Γ = 3., V = V)
+
+node_types_default = [(0.5, get_load, nothing), (0.5, get_normal_form, nothing)]
+
+function get_nodes2(power_flow_solution; node_types = node_types_default)
+    num_nodes = length(power_flow_solution)
+    node_idxs = collect(1:num_nodes)
+    nt_idxs = []
+    for nt in node_types
+        n_nodes = round(Int, nt[1] * num_nodes)
+        s = sample(node_idxs, n_nodes, replace=false)
+        symdiff!(node_idxs, s)
+        push!(nt_idxs, s)
+    end
+
+    if ! (node_idxs == []) # Just to make sure all nodes are actually distributed to the different types
+        append!(nt_idxs[end], node_idxs)
+    end
+
+    nodes = Array{Any}(undef, num_nodes)
+    @assert isapprox(sum(x -> x[1], node_types), 1)
+    for (nt, idxs) in zip(node_types, nt_idxs)
+        for i in idxs
+            nodes[i] = nt[2](power_flow_solution[i]..., nt[3]) # parameters
+        end
+    end
+    nodes
+end
+
 """
     get_nodes(pg_struct)
 
