@@ -32,6 +32,7 @@ module SyntheticPowerGrids
     include("line_dynamics.jl")
     
     include("nodal_dynamics.jl")
+    get_DroopControlledInverterApprox, get_ThirdOrderMachineApprox, get_swingLVS, get_PQ, get_dVOCapprox, get_normalform 
 
     include("probabilistic_capacity_expansion.jl")
 end
