@@ -46,8 +46,8 @@ end
     @test length(pg.nodes) == num_nodes                      # Correct number of nodes has been created
     @test length(edges(own_graph.graph)) == length(pg.lines) # Correct number of edges has been created
 
-    @test isapprox(op[1:num_nodes - 1, :p], P_vec[1:end - 1], atol = 10^-8) # Power distribution used correctly
-    @test isapprox(op[num_nodes, :p], P_vec[end], atol = 0.01)             # Higher tolerance because of the compensation of losses
+    @test isapprox(op[1:num_nodes - 1, :p], P_vec[1:end - 1], atol = 10^-6) # Power distribution used correctly
+    @test isapprox(op[num_nodes, :p], P_vec[end], atol = 0.01)              # Higher tolerance because of the compensation of losses
 
     @test unique(typeof.(pg.nodes)) == [NormalForm] # Only NormalForms should be created
     @test unique(typeof.(pg.lines)) == [StaticLine] # Correct Line type
