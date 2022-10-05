@@ -1,0 +1,14 @@
+using Pkg
+Pkg.activate(@__DIR__)
+
+using SyntheticPowerGrids
+
+##
+parameters_third_order = Dict(:X => 1.0, :γ => 0.2, :α => 2.0) 
+parameters_droop_controlled = Dict(:X => 1.0, :γ => 0.2, :α => 2.0, :τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => 1.0) 
+#parameters_normalform = Dict(:Aᵤ => Aᵤ, :Bᵤ = Bᵤ, :Cᵤ => Cᵤ, :Gᵤ => Gᵤ, :Hᵤ => Hᵤ, :Aₓ => [], :Bₓ = Bₓ, :Cₓ = [], :Gₓ = [], :Hₓ = [], Mₓ = [], x_dims = 0)
+
+nodal_dynamics = [(1/3, get_ThirdOrderMachineApprox, parameters_third_order), (1/3, get_DroopControlledInverterApprox, parameters_droop_controlled), (1/3, get_PQ, nothing)]
+pg_mixed = PGGeneration(num_nodes = 100, nodal_dynamics = nodal_dynamics, lines = :StaticLine)
+
+pg, op, pg_struct_new, rejections = random_PD_grid(pg_mixed)
