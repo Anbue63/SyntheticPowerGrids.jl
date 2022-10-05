@@ -24,7 +24,7 @@ L = get_effective_distances(own_graph; mean_len_km = 42, shortest_line_km = 0.06
 nodal_parameters = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => 0.5)
 nodal_dynamics = [(1.0, get_DroopControlledInverterApprox, nodal_parameters)]
 
-x = PGGeneration(num_nodes = num_nodes, cables_vec = cables_vec, nodal_dynamics = nodal_dynamics, P_vec = P_vec, embedded_graph = own_graph, coupling = :predefined, lines = :StaticLine, slack = true)
+x = PGGeneration(num_nodes = num_nodes, cables_vec = cables_vec, nodal_dynamics = nodal_dynamics, P_vec = P_vec, embedded_graph = own_graph, coupling = :predefined, lines = :StaticLine, slack = true, maxiters = 10)
 Y, Y_shunt = get_line_admittance_matrix(x, L)                             # Admittances and shunts
 x.edge_parameters = Dict(:Y => Y, :Y_shunt => Y_shunt) 
 

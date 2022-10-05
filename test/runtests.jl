@@ -24,7 +24,7 @@ end
 
     @test isapprox(op[:, :p], P_vec, rtol = 0.1) # Power distribution used correctly, rtol = 0.1 is the the bottleneck from power dynamics, power model uses 0.9 * P and 1.1 * P as the bounds for the power set points
 
-    @test unique(typeof.(pg.nodes)) == [NormalForm] # Only NormalForms should be created
+    @test sort(Symbol.(unique(typeof.(pg.nodes)))) == [:NormalForm, :SlackAlgebraic] # Correct Node types 
     @test unique(typeof.(pg.lines)) == [StaticLine] # Correct Line type
 end 
 
