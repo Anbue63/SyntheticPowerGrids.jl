@@ -29,4 +29,4 @@ Y, Y_shunt = get_line_admittance_matrix(x, L)                             # Admi
 x.edge_parameters = Dict(:Y => Y, :Y_shunt => Y_shunt) 
 
 ##
-pg, op, pg_struct_new, rejections = random_PD_grid(x)
+pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(x)

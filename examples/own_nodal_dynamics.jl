@@ -23,11 +23,11 @@ nodal_dynamics = [(1.0, get_swingLVS, parameters_swing)]
 ##
 # mehrnaz
 pg_struct = PGGeneration(num_nodes = 100, nodal_dynamics = nodal_dynamics, lines = :StaticLine)
-pg, op, pg_struct_updated, rejections = random_PD_grid(pg_struct)
+pg, op, pg_struct_updated, rejections = generate_powergrid_dynamics(pg_struct)
 
 ##
 # Jakob
 edge_parameters = Dict(:K => -10im)
 d = PGGeneration(num_nodes = 100, power_distribution = :Plus_Minus_1, nodal_dynamics = nodal_dynamics, lines = :StaticLine, coupling = :homogenous, edge_parameters = edge_parameters)
 
-pg, op, pg_struct_updated, rejections = random_PD_grid(d)
+pg, op, pg_struct_updated, rejections = generate_powergrid_dynamics(d)

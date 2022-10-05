@@ -9,7 +9,7 @@ nodal_dynamics = [(1.0, get_dVOCapprox, nodal_parameters)]
 pg_struct = PGGeneration(num_nodes = 10, nodal_dynamics = nodal_dynamics,  lines = :StaticLine)
 
 ##
-pg, op, pg_struct_new, rejections = random_PD_grid(pg_struct)
+pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(pg_struct)
 
 ##
 using OrdinaryDiffEq

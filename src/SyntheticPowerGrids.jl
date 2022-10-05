@@ -21,7 +21,7 @@ module SyntheticPowerGrids
     export parameter_DroopControlledInverterApprox
 
     include("pg_generation.jl")
-    export random_PD_grid
+    export generate_powergrid_dynamics
 
     include("validators.jl")
 

@@ -13,4 +13,4 @@ num_nodes = 100
 
 pg_mixed = PGGeneration(num_nodes = num_nodes, nodal_dynamics = nodal_dynamics)
 
-pg, op, pg_struct_new, rejections = random_PD_grid(pg_mixed)
+pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(pg_mixed)

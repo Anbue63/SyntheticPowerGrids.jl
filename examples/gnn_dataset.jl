@@ -11,4 +11,4 @@ nodal_dynamics = [(1/6, get_DroopControlledInverterApprox, nodal_parameters_a), 
 
 ##
 a = PGGeneration(num_nodes = 101, nodal_dynamics = nodal_dynamics, lines = :StaticLine)
-pg, op, pg_struct_new, rejections = random_PD_grid(a)
+pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(a)
