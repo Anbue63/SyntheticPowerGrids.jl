@@ -44,7 +44,7 @@ function random_PD_grid(pg_struct::PGGeneration)
             pg_struct.Q_vec = op_ancillary[:, :q] # Reactive Power of the ancillary power grid
         end
 
-        nodes = get_nodes(pg_struct) # Nodal dynamics
+        nodes = get_nodes(pg_struct.P_vec, pg_struct.Q_vec, pg_struct.V_vec, pg_struct.slack, pg_struct.slack_idx, pg_struct.nodal_dynamics)
         pg = PowerGrid(nodes, lines)
         ic_guess = get_initial_guess(pg, op_ancillary)
 

@@ -1,15 +1,13 @@
 
-node_types_default = [(1/3, get_PQ, nothing), (1/3, get_DroopControlledInverterApprox, Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => 0.5)), (1/3, get_DroopControlledInverterApprox, Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => 0.5))]
-
-function get_nodes2(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector{Float64}, slack::Bool, slack_idx::Int64, node_types = node_types_default)
+function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector{Float64}, slack::Bool, slack_idx::Int64, node_types)
     num_nodes = length(P_set)        # Number of all nodes
     node_idxs = collect(1:num_nodes) 
     node_types_idxs = [] 
 
-    for nt in node_types 
-        n_nodes = round(Int, nt[1] * num_nodes)
-        s = sample(node_idxs, n_nodes, replace = false)
-        symdiff!(node_idxs, s)
+    for nt in node_types # Run over all node types to distribute them
+        n_nodes = round(Int, nt[1] * num_nodes) # Number of nodes of type `nt`
+        s = sample(node_idxs, n_nodes, replace = false) # Sample nodes (without replacement) with should have type nt
+        symdiff!(node_idxs, s) # Remove nodes `s` which were already sampled
         push!(node_types_idxs, s)
     end
 
@@ -26,13 +24,13 @@ function get_nodes2(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vecto
         end
     end
 
-    if slack == true
+    if slack == true # Adds a slack bus to the grid, the default option is not to use a slack
         nodes[slack_idx] = SlackAlgebraic(U = complex(V_set[slack_idx]))
     end
     return nodes
 end
 
-function get_DroopControlledInverterApprox(P_set, Q_set, V_set, nodal_parameters)
+function get_DroopControlledInverterApprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     τ_P = nodal_parameters[:τ_P] # Time constant low pass filter measuring the active power
     τ_Q = nodal_parameters[:τ_Q] # Time constant low pass filter measuring the reactive power
     K_P = nodal_parameters[:K_P] # Gain constant low pass filter measuring the active power
@@ -42,7 +40,7 @@ function get_DroopControlledInverterApprox(P_set, Q_set, V_set, nodal_parameters
     NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
 end
 
-function get_ThirdOrderMachineApprox(P_set, Q_set, V_set, nodal_parameters)
+function get_ThirdOrderMachineApprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     X = nodal_parameters[:X] # Reactance
     α = nodal_parameters[:α] # Voltage dynamics time constant
     γ = nodal_parameters[:γ] # Damping Coefficient
@@ -52,20 +50,11 @@ function get_ThirdOrderMachineApprox(P_set, Q_set, V_set, nodal_parameters)
     NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
 end
 
-function get_PQ(P_set, Q_set, V_set, nodal_parameters)
+function get_PQ(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters)
     PQAlgebraic(P = P_set, Q = Q_set)
 end
 
-function get_swingLVS(P_set, Q_set, V_set, nodal_parameters)
-    H = nodal_parameters[:H] # Inertia Constant
-    Ω = nodal_parameters[:Ω] # Rated Frequency
-    D = nodal_parameters[:D] # Damping Coefficient
-    Γ = nodal_parameters[:Γ] # Voltage stability Coefficient
-
-    SwingEqLVS(H = H, P = P_set, D = D, Ω = Ω, Γ = Γ, V = V_set)
-end
-
-function get_dVOCapprox(P_set, Q_set, V_set, nodal_parameters)
+function get_dVOCapprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     Ω = nodal_parameters[:Ω] # Rated Frequency
     η = nodal_parameters[:η] # positive control parameter
     α = nodal_parameters[:α] # positive control parameter
@@ -75,7 +64,7 @@ function get_dVOCapprox(P_set, Q_set, V_set, nodal_parameters)
     NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
 end
 
-function get_normalform(P_set, Q_set, V_set, nodal_parameters)
+function get_normalform(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     x_dims = nodal_parameters[:x_dims] # Number of internal variables
 
     Aᵤ = nodal_parameters[:Aᵤ] 
