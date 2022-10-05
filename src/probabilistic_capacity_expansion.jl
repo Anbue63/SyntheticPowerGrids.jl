@@ -12,10 +12,11 @@ function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, di
         if save_network == false 
             overload_idx = findall(save_flow .== false) # Find overloaded line(s)
             cables_vec = pg_struct.cables_vec
-            cables_vec[overload_idx] += 1               # Add a new cables to the overloaded line(s)
+            cables_vec[overload_idx] .= 1 .+ cables_vec[overload_idx] # Add a new cables to the overloaded line(s)
 
             pg_struct.cables_vec = cables_vec
 
+            L = get_effective_distances(pg_struct.embedded_graph; mean_len_km = pg_struct.mean_len_km, shortest_line_km = pg_struct.shortest_line_km) # Effective spacial distances
             Y, Y_shunt = get_line_admittance_matrix(pg_struct, L) # Update Admittances and shunts
             pg_struct.edge_parameters = Dict(:Y => Y, :Y_shunt => Y_shunt) 
 
