@@ -1,26 +1,26 @@
 
-function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector{Float64}, slack::Bool, slack_idx::Int64, node_types)
+function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector{Float64}, slack::Bool, slack_idx::Int64, node_dynamics)
     num_nodes = length(P_set)        # Number of all nodes
     node_idxs = collect(1:num_nodes) 
-    node_types_idxs = [] 
+    node_dynamics_idxs = [] 
 
-    for nt in node_types # Run over all node types to distribute them
-        n_nodes = round(Int, nt[1] * num_nodes) # Number of nodes of type `nt`
-        s = sample(node_idxs, n_nodes, replace = false) # Sample nodes (without replacement) with should have type nt
+    for nd in node_dynamics[1:end-1] # Run over all node types to distribute them
+        n_nodes = round(Int, nd[1] * num_nodes) # Number of nodes of type `nd`
+        s = sample(node_idxs, n_nodes, replace = false) # Sample nodes (without replacement) with should have type nd
         symdiff!(node_idxs, s) # Remove nodes `s` which were already sampled
-        push!(node_types_idxs, s)
+        push!(node_dynamics_idxs, s)
     end
 
     if ! (node_idxs == []) # Check if all nodes were distributed to the different types
-        append!(node_types_idxs[end], node_idxs)
+        append!(node_dynamics_idxs[end], node_idxs)
     end
 
     nodes = Array{Any}(undef, num_nodes)
-    # @assert isapprox(sum(x -> x[1], node_types), 1) should go in validate pg not here!
-    for (nt, idxs) in zip(node_types, node_types_idxs)
+    # @assert isapprox(sum(x -> x[1], node_dynamics), 1) should go in validate pg not here!
+    for (nd, idxs) in zip(node_dynamics, node_dynamics_idxs)
         for i in idxs
-            nodal_parameters = nt[3]
-            nodes[i] = nt[2](P_set[i], Q_set[i], V_set[i], nodal_parameters)
+            nodal_parameters = nd[3]
+            nodes[i] = nd[2](P_set[i], Q_set[i], V_set[i], nodal_parameters)
         end
     end
 
