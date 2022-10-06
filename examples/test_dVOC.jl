@@ -1,6 +1,5 @@
 using Pkg
 #Pkg.activate(@__DIR__)
-using Revise
 using SyntheticPowerGrids
 
 nodal_parameters = Dict(:η => 3 * 10^(-3), :α => 5.0,  :κ => π/2, :Ω => 0)

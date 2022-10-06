@@ -4,32 +4,40 @@
 Tabelle 5.6 Standardfreileitungen in der 220-kV- und 380-kV-Ebene 
 https://www.dena.de/newsroom/publikationsdetailansicht/pub/dena-verteilnetzstudie-ausbau-und-innovationsbedarf-der-stromverteilnetze-in-deutschland-bis-2030/
 """
-function line_properties_380kV(length, ω = 2π * 50)
-    R = 0.025 * length
-    X = 0.25  * length
-    C_shunt = 13.7 * 10^-9 * length
+function line_properties_380kV(length, cables, ω = 2π * 50)
+    c_wire = 1 #wires / wires_typical
+    c_cable = cables / 3
+
+    R = 0.025 * length / (c_cable * c_wire)
+    X = 0.25  * length / (c_cable * c_wire)
+    C_shunt = 13.7 * 10^-9 * length * (c_cable * c_wire)
+
     Y_shunt = 1im * C_shunt * ω
     Z = R + 1im * X
     return Z, Y_shunt
 end
 
 """
-    get_line_admittance_matrix(g::EmbeddedGraph{Int64}, L_matrix::Matrix{Float64})
+    get_line_admittance_matrix(pg_struct::PGGeneration, L_matrix::Matrix{Float64})
 
 Calculates the line admittances and the shunts with respect to the line length.
 """
-function get_line_admittance_matrix(g::EmbeddedGraph{Int64}, L_matrix::Matrix{Float64})
-    N = size(L_matrix)[1]                     # Number of nodes
-    Y = zeros(Complex{Float64}, N, N)         # Admittance Matrix
-    Y_shunt = zeros(Complex{Float64}, N, N)   # Shunt Admittance Matrix
-    dest_vec = dst.(edges(g.graph))
-    source_vec = src.(edges(g.graph))
+function get_line_admittance_matrix(pg_struct::PGGeneration, L_matrix::Matrix{Float64})
+    embedded_graph = pg_struct.embedded_graph
+    cables_vec = pg_struct.cables_vec
+    num_nodes = pg_struct.num_nodes                         # Number of nodes
+    Y = zeros(Complex{Float64}, num_nodes, num_nodes)       # Admittance Matrix
+    Y_shunt = zeros(Complex{Float64}, num_nodes, num_nodes) # Shunt Admittance Matrix
+
+    e = edges(embedded_graph.graph)
+    dest_vec = dst.(e)
+    source_vec = src.(e)
 
     for i in eachindex(source_vec) # If nodes are connected -> Calculate Admittance
         source = source_vec[i]
         dest = dest_vec[i]
 
-        impedance_line, shunt_admittance_line = line_properties_380kV(L_matrix[source, dest])  # Total impedance of the line in Ohm
+        impedance_line, shunt_admittance_line = line_properties_380kV(L_matrix[source, dest], cables_vec[i])  # Total impedance of the line in Ohm
                 
         # Conversion to Admittance
         Y[source, dest] = 1 / impedance_line 

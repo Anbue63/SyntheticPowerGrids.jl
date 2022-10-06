@@ -1,9 +1,8 @@
-#using Pkg
-#Pkg.activate(@__DIR__)
-
-using Revise
+using Pkg
+Pkg.activate(@__DIR__)
 using SyntheticPowerGrids
 
+##
 nodal_parameters_a = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0]) # This option recover the GNN dataset grids, please do not delete it
 nodal_parameters_b = Dict(:X => 1.0, :γ => 0.2, :α => 2.0) 
 nodal_parameters_c = Dict(:X => 1.0, :γ => 0.2, :α => 2.0, :τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => [0.5, 1.0 , 5.0]) 
@@ -24,11 +23,6 @@ for_mehrnaz = PGGeneration(num_nodes = 100, nodal_parameters = nodal_parameters_
 
 ##
 pg, op, embedded_graph, rejections = random_PD_grid(b)
-op[:, :p] # vector containing all nodal active powers
-# get_effective_distances(embedded_graph, mean_len_km = c.mean_len_km, shortest_line_km = c.shortest_line_km)
-
-unique(typeof.(pg.lines))
-
 
 ##
 using OrdinaryDiffEq

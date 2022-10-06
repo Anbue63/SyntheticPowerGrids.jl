@@ -2,14 +2,16 @@
     # Per Unit System Definition 
     P_base::Float64 = 100 * 10^6; @assert P_base > 0.0 "Base Power has to be positive."
     V_base::Float64 = 380 * 10^3; @assert V_base > 0.0 "Base Voltage has to be positive."
+    Y_base::Float64 = P_base / (V_base)^2;  @assert Y_base > 0.0 "Base Admittance has to be positive."
 
     # Lines
     coupling::Symbol = :line_lengths
     lines::Symbol = :PiModelLine;
     edge_parameters::Dict = Dict();
-    shortest_line_km::Float64 = 0.06; @assert mean_len_km >= 0.0 "The shortest line length has to be not be negative."
+    shortest_line_km::Float64 = 0.06; @assert mean_len_km >= 0.0 "The shortest line length can not be negative."
     mean_len_km::Float64 = 37.12856121212121; @assert mean_len_km > 0.0 "The mean line length has to be bigger than 0.0."
-
+    wires_typical::Int64 = 4; @assert wires_typical > 0 "The typical number of wires has to be a positive integer." # Typical number of wires in the german 380kV transmission system
+    
     # Nodes
     loads::Symbol = :PQAlgebraic;
     generation_dynamics::Symbol = :DroopControlledInverterApprox;
@@ -18,15 +20,19 @@
     nodal_shares::Dict; @assert sum(values(nodal_shares)) == 1.0 "The sum of all nodal share has to equal 1.0!"
 
     # Power 
+    # Dict
     power_distribution::Symbol = :Bimodal;
-    P0::Float64 = 1.31; @assert maxiters > 0.0 "Reference power for power distribution has to be positive."
+    P0::Float64 = 1.31; @assert P0 > 0.0 "Reference power for power distribution has to be positive."
     
     # Set Points
+    # Todo also use a Dict here
+    #set_points = Dict(:P_vec => fill(nothing, num_nodes), :Q_vec => fill(nothing, num_nodes), :V_vec => ones(num_nodes))
     P_vec::Vector = fill(nothing, num_nodes); @assert length(P_vec) == num_nodes "Give a active power set point for each node."
     Q_vec::Vector = fill(nothing, num_nodes); @assert length(Q_vec) == num_nodes "Give a reactive power set point for each node."
     V_vec::Vector{Float64} = ones(num_nodes); @assert length(V_vec) == num_nodes "Give a voltage power set point for each node."
 
     # Topology
+    # use a dict as well ?
     SyntheticNetworksParas::Vector{Float64} = [1, 1/5, 3/10, 1/3, 1/10, 0.0];
     embedded_graph = nothing
 
@@ -35,6 +41,11 @@
     validators::Bool = true
     slack = false
     slack_idx::Int64 = num_nodes
+    cables_vec = nothing
+    probabilistic_capacity_expansion::Bool = false
+    dist_load = nothing
+    dist_args = nothing
+    num_tries::Int64 = 100
 end
 
 function validate_struct(pg_struct::PGGeneration)
