@@ -10,6 +10,7 @@ module SyntheticPowerGrids
     using LinearAlgebra
     using ForwardDiff
     using Parameters
+    using StatsBase
 
     include("pg_struct.jl")
     export PGGeneration

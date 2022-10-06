@@ -1,5 +1,5 @@
-#using Pkg
-#Pkg.activate(@__DIR__)
+using Pkg
+Pkg.activate(@__DIR__)
 using SyntheticPowerGrids
 
 ##
@@ -41,4 +41,3 @@ solution1 = PowerGridSolution(dqsol, pg_fluc)
 ##
 using Plots
 plot(solution1, :, :p, legend=false)
-
