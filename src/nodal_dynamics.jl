@@ -4,15 +4,16 @@ function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector
     node_idxs = collect(1:num_nodes) 
     node_dynamics_idxs = [] 
 
-    for nd in node_dynamics[1:end-1] # Run over all node types to distribute them
-        n_nodes = round(Int, nd[1] * num_nodes) # Number of nodes of type `nd`
-        s = sample(node_idxs, n_nodes, replace = false) # Sample nodes (without replacement) with should have type nd
-        symdiff!(node_idxs, s) # Remove nodes `s` which were already sampled
-        push!(node_dynamics_idxs, s)
-    end
-
-    if ! (node_idxs == []) # Check if all nodes were distributed to the different types
-        append!(node_dynamics_idxs[end], node_idxs)
+    if length(node_dynamics) > 1
+        for nd in node_dynamics[1:end-1] # Run over node types to distribute them
+            n_nodes = round(Int, nd[1] * num_nodes) # Number of nodes of type `nd`
+            s = sample(node_idxs, n_nodes, replace = false) # Sample nodes (without replacement) with should have type nd
+            symdiff!(node_idxs, s) # Remove nodes `s` which were already sampled
+            push!(node_dynamics_idxs, s)
+        end
+        push!(node_dynamics_idxs, node_idxs)
+    else
+        push!(node_dynamics_idxs, node_idxs)
     end
 
     nodes = Array{Any}(undef, num_nodes)

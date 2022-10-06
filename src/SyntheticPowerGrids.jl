@@ -27,6 +27,8 @@ module SyntheticPowerGrids
 
     include("operationpoint.jl")
 
+    include("fluc_node.jl")
+
     include("active_power.jl")
 
     include("line_dynamics.jl")

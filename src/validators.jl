@@ -103,7 +103,6 @@ function small_signal_stability_analysis(h::ODEFunction, eq_point, p = nothing)
 
         D = f_y * pinv(g_y) * g_x # Degradation matrix
         A_s = f_x - D             # State matrix / Reduced Jacobian (eq. 7.16 in [1])
-
         λ = eigvals(A_s) .|> real |> extrema # Eigenvalues of the reduced jacobian
     end
     if all(λ .< 0.0)
