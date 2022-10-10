@@ -1,19 +1,29 @@
+function minmax_normalize_int_array!(sum_arr, arr)
+    while sum(arr) < sum_arr
+        _, i = findmax(arr)
+        arr[i] -= 1
+    end
+
+    while sum(arr) > sum_arr
+        _, i = findmin(arr)
+        arr[i] += 1
+    end
+    nothing
+end
 
 function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector{Float64}, slack::Bool, slack_idx::Int64, node_dynamics)
     num_nodes = length(P_set)        # Number of all nodes
     node_idxs = collect(1:num_nodes) 
     node_dynamics_idxs = [] 
 
-    if length(node_dynamics) > 1
-        for nd in node_dynamics[1:end-1] # Run over node types to distribute them
-            n_nodes = round(Int, nd[1] * num_nodes) # Number of nodes of type `nd`
-            s = sample(node_idxs, n_nodes, replace = false) # Sample nodes (without replacement) with should have type nd
-            symdiff!(node_idxs, s) # Remove nodes `s` which were already sampled
-            push!(node_dynamics_idxs, s)
-        end
-        push!(node_dynamics_idxs, node_idxs)
-    else
-        push!(node_dynamics_idxs, node_idxs)
+    n_nodes = [round(Int, num_nodes * nd[1]) for nd in node_dynamics] # Fraction of nodes of type `nd`
+
+    minmax_normalize_int_array!(num_nodes, n_nodes)  # Note that this can introduce nodes with weight 0. into the system.
+
+    for n_node in n_nodes # Run over node types to distribute them
+        s = sample(node_idxs, n_node, replace = false) # Sample nodes (without replacement) with should have type nd
+        symdiff!(node_idxs, s) # Remove nodes `s` which were already sampled
+        push!(node_dynamics_idxs, s)
     end
 
     nodes = Array{Any}(undef, num_nodes)
