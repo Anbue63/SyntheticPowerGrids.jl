@@ -1,10 +1,10 @@
-function minmax_normalize_int_array!(sum_arr, arr)
-    while sum(arr) < sum_arr
+function min_max_normalize_int_array!(sum_arr, arr)
+    while sum(arr) > sum_arr
         _, i = findmax(arr)
         arr[i] -= 1
     end
 
-    while sum(arr) > sum_arr
+    while sum(arr) < sum_arr
         _, i = findmin(arr)
         arr[i] += 1
     end
@@ -18,7 +18,7 @@ function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector
 
     n_nodes = [round(Int, num_nodes * nd[1]) for nd in node_dynamics] # Fraction of nodes of type `nd`
 
-    minmax_normalize_int_array!(num_nodes, n_nodes)  # Note that this can introduce nodes with weight 0. into the system.
+    min_max_normalize_int_array!(num_nodes, n_nodes)  # Note that this can introduce nodes with weight 0. into the system.
 
     for n_node in n_nodes # Run over node types to distribute them
         s = sample(node_idxs, n_node, replace = false) # Sample nodes (without replacement) with should have type nd
