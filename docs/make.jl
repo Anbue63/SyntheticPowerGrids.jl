@@ -1,3 +1,9 @@
 using Documenter, SyntheticPowerGrids
 
-makedocs(sitename="SyntheticPowerGrids.jl Documentation")
+makedocs(;
+    modules=[SyntheticPowerGrids],
+    authors = "Anna Büttner and contributors",
+    sitename = "SyntheticPowerGrids.jl",
+    pages = [
+        "SyntheticPowerGrids Docs" => "index.md"]
+)
