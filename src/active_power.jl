@@ -35,7 +35,7 @@ end
 get_bimodal_distribution(pg_struct)
 
 Generates the active power set points for the nodes.
-Turns half of them into producers with P = 1 and the other half into consumers with P = -1. Often used in the theoretical physics community.
+Turns half of them into producers with P = +1 and the other half into consumers with P = -1. Often used in the theoretical physics community.
 """
 function get_plus_minus_1_distribution(pg_struct)
     num_nodes = pg_struct.num_nodes # Number of nodes
