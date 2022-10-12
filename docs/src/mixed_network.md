@@ -4,7 +4,7 @@ Generating networks with different types of dynamics on the nodes is also possib
 We begin again by defining the parameters for the nodes, this time each type of node gets its own Dict: 
 ```@julia
 parameters_third_order = Dict(:X => 1.0, :γ => 0.2, :α => 2.0) 
-parameters_droop_controlled = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :V_r => 1.0, :τ_P => 1.0) 
+parameters_droop_controlled = Dict(:τ_Q => 5.0, :K_P => 5, :K_Q => 5.0, :τ_P => 0.5) 
 ```
 
 Then we write the vector containing the dynamics, each node should show up with a share of 1/3:

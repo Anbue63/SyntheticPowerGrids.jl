@@ -27,7 +27,6 @@ function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector
     end
 
     nodes = Array{Any}(undef, num_nodes)
-    # @assert isapprox(sum(x -> x[1], node_dynamics), 1) should go in validate pg not here!
     for (nd, idxs) in zip(node_dynamics, node_dynamics_idxs)
         for i in idxs
             nodal_parameters = nd[3]

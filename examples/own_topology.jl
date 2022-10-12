@@ -1,5 +1,3 @@
-using Pkg
-Pkg.activate(@__DIR__)
 using SyntheticPowerGrids
 
 # In this example we will show how to use your own predefined topology, in the form of an [EmbeddedGraph](https://github.com/PIK-ICoNe/EmbeddedGraphs.jl), and set-points for the grid generation.

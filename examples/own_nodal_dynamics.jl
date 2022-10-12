@@ -1,6 +1,4 @@
 # Adding new nodal dynamics
-using Pkg
-Pkg.activate(@__DIR__)
 using SyntheticPowerGrids
 ##
 #It is easy to add new node types for the synthetic grids, with out having to extend the package.
@@ -24,7 +22,7 @@ end
 # Then we can use the function `get_swingLVS` like any other function for the nodal dynamics.
 # Again we define the parameters and the `PGGeneration` struct and generate the synthetic power grid.
 parameters = Dict(:D => 10.0, :H => 5, :Γ => 10, :V => 1.0, :Ω => 2π * 50)  
-dynamics = [(1.0, get_swingLVS, parameters_swing)]
+dynamics = [(1.0, get_swingLVS, parameters)]
 
 pg_struct = PGGeneration(num_nodes = 100, nodal_dynamics = dynamics, lines = :StaticLine)
 pg, op, pg_struct_updated, rejections = generate_powergrid_dynamics(pg_struct)

@@ -1,7 +1,7 @@
 """
-    generate_powergrid_dynamics(N::Int)
+    generate_powergrid_dynamics(pg_struct::PGGeneration)
 
-Generates a random power grid using SyntheticNetworks and then turns it into a PowerDynamics.PowerGrid type.
+Generates a random power grid.
 """
 function generate_powergrid_dynamics(pg_struct::PGGeneration)
     validate_struct(pg_struct) # Test if options given by the user are valid

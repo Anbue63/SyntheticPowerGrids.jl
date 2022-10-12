@@ -1,5 +1,3 @@
-using Pkg
-Pkg.activate(@__DIR__)
 using SyntheticPowerGrids
 
 # In this example we will show how to add fluctuations to the synthetic grids.

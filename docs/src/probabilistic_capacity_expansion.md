@@ -25,7 +25,7 @@ nodal_dynamics =  [(1/2, get_DroopControlledInverterApprox, nodal_parameters), (
 
 Here we trigger the algorithm by using `probabilistic_capacity_expansion = true`. Furthermore we increase the mean nodal power `P0` to ensure that the capacity is too low such that the algorithm gets triggered even for a low number of samples.
 ```@julia
-pg_struct = PGGeneration(num_nodes = num_nodes, nodal_dynamics = nodal_dynamics, probabilistic_capacity_expansion = true, validators = false, num_tries = 20, edge_parameters = edge_parameters, cables_vec = cables_vec, P0 = 10)
+pg_struct = PGGeneration(num_nodes = num_nodes, nodal_dynamics = nodal_dynamics, probabilistic_capacity_expansion = true, validators = false, num_tries = 20, edge_parameters = edge_parameters, cables_vec = cables_vec, P0 = 100)
 pg, op, pg_struct_updated, rejections = generate_powergrid_dynamics(pg_struct)
 ```
 
