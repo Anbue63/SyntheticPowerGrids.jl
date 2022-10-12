@@ -8,15 +8,14 @@ function parameter_DroopControlledInverterApprox(;P_set, Q_set, τ_P, τ_Q, K_P,
     Cᵤ = - 1 / (2 * τ_Q * V_r^2)
     Gᵤ = 0
     Hᵤ = - K_Q / (τ_Q * V_r)
-    Aₓ = K_P * P_set 
-    Bₓ = - 1 
+    Aₓ = K_P * P_set / τ_P
+    Bₓ = - 1 / τ_P
     Cₓ = 0
-    Gₓ = - K_P 
+    Gₓ = - K_P / τ_P
     Hₓ = 0 
-    Mₓ = τ_P
     x_dims = 1
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
 end
 
 function parameter_ThirdOrderMachineApprox(;P_m, E_f, E_set, X, α, γ, Y_n) 
@@ -30,10 +29,9 @@ function parameter_ThirdOrderMachineApprox(;P_m, E_f, E_set, X, α, γ, Y_n)
     Cₓ = 0.0 
     Gₓ = -1
     Hₓ = 0
-    Mₓ = 1.0
     x_dims = 1
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
 end
 
 function parameter_dVOC(;P_set, Q_set, V_set, Ω_set, η, α, κ, Y_n)
@@ -49,10 +47,9 @@ function parameter_dVOC(;P_set, Q_set, V_set, Ω_set, η, α, κ, Y_n)
     Cₓ = []
     Gₓ = [] 
     Hₓ = [] 
-    Mₓ = []
     x_dims = 0
 
-    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims]
+    return [Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
 end
 
 struct NormalForm <: AbstractNode
@@ -66,12 +63,11 @@ struct NormalForm <: AbstractNode
     Cₓ
     Gₓ
     Hₓ
-    Mₓ
     Y_n    # Shunt admittance for power dynamics
     x_dims # Dimension of the internal variables
 end
 
-NormalForm(; Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n = 0, x_dims) = NormalForm(Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims)
+NormalForm(; Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n = 0, x_dims) = NormalForm(Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims)
 
 function construct_vertex(nf::NormalForm)
     @assert isreal(nf.x_dims)  "The dimension of x has to be a real number!"
@@ -94,7 +90,6 @@ function construct_vertex(nf::NormalForm)
     Cₓ = nf.Cₓ
     Gₓ = nf.Gₓ
     Hₓ = nf.Hₓ
-    Mₓ = nf.Mₓ
 
     Y_n = nf.Y_n
 
@@ -104,7 +99,6 @@ function construct_vertex(nf::NormalForm)
         @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
         @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
         @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
-        @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
@@ -114,7 +108,7 @@ function construct_vertex(nf::NormalForm)
             s = u * conj(i)       # Apparent Power S = P + iQ
             v2 = abs2(u)          # Absolute squared voltage
         
-            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
+            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s))
             du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
             
             # Splitting the complex parameters
@@ -144,7 +138,6 @@ function construct_vertex(nf::NormalForm)
         @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
         @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
         @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
-        @assert length(Mₓ) == x_dims "Mₓ parameters have the wrong dimension."
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
@@ -153,7 +146,7 @@ function construct_vertex(nf::NormalForm)
             s = u * conj(i)       # Apparent Power S = P + iQ
             v2 = abs2(u)          # Absolute squared voltage
         
-            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s)) ./ Mₓ
+            dx = (Aₓ + Bₓ .* x + Cₓ .* v2 + Gₓ .* real(s) + Hₓ .* imag(s))
             du = (Aᵤ + Bᵤ  * x + Cᵤ  * v2 + Gᵤ  * real(s) + Hᵤ  * imag(s)) * u
             
             # Splitting the complex parameters
