@@ -3,7 +3,7 @@
 using SyntheticPowerGrids
 
 ##
-nodal_parameters = Dict(:η => 3 * 10^(-3), :α => 5.0,  :κ => π/2, :Ω => 0)
+nodal_parameters = Dict(:η => 3 * 10^(-3), :α => 5.0,  :κ => π/2)
 nodal_dynamics = [(1.0, get_dVOCapprox, nodal_parameters)]
 
 pg_struct = PGGeneration(num_nodes = 10, nodal_dynamics = nodal_dynamics,  lines = :StaticLine)
