@@ -18,14 +18,11 @@ function line_properties_380kV(length, cables, ω = 2π * 50)
 end
 
 """
-    get_line_admittance_matrix(pg_struct::PGGeneration, L_matrix::Matrix{Float64})
+    get_line_admittance_matrix(embedded_graph::EmbeddedGraph{Int64}; L_matrix::Matrix{Float64}, cables_vec, num_nodes::Int64)
 
 Calculates the line admittances and the shunts with respect to the line length.
 """
-function get_line_admittance_matrix(pg_struct::PGGeneration, L_matrix::Matrix{Float64})
-    embedded_graph = pg_struct.embedded_graph
-    cables_vec = pg_struct.cables_vec
-    num_nodes = pg_struct.num_nodes                         # Number of nodes
+function get_line_admittance_matrix(embedded_graph::EmbeddedGraph{Int64}; L_matrix::Matrix{Float64}, cables_vec, num_nodes::Int64)
     Y = zeros(Complex{Float64}, num_nodes, num_nodes)       # Admittance Matrix
     Y_shunt = zeros(Complex{Float64}, num_nodes, num_nodes) # Shunt Admittance Matrix
 
