@@ -10,7 +10,7 @@ function get_lines(pg_struct::PGGeneration)
     # Different possible coupling types
     if pg_struct.coupling == :line_lengths
         L_matrix = get_effective_distances(embedded_graph, mean_len_km = pg_struct.mean_len_km, shortest_line_km = pg_struct.shortest_line_km) # Matrix containing the line lengths in km
-        Y, Y_shunt = get_line_admittance_matrix(pg_struct, L_matrix) # Line admittance matrix and Shunts, Entry's are in Ohm
+        Y, Y_shunt = get_line_admittance_matrix(pg_struct.embedded_graph; L_matrix = L_matrix, cables_vec = pg_struct.cables_vec, num_nodes = pg_struct.num_nodes) # Line admittance matrix and Shunts, Entry's are in Ohm
 
     elseif pg_struct.coupling == :predefined
         Y = pg_struct.edge_parameters[:Y]
