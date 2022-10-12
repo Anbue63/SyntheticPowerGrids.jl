@@ -70,7 +70,7 @@ function get_dVOCapprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_pa
     α = nodal_parameters[:α] # positive control parameter
     κ = nodal_parameters[:κ] # uniform complex phase
 
-    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, η = η, α = α, κ = κ, Y_n = 0.0)
+    P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, η = η, α = α, κ = κ, Y_n = 0.0)
     NormalForm(P = P, Q = Q, V = V, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
 end
 
