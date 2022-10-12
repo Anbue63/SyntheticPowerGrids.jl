@@ -12,5 +12,6 @@ makedocs(;
         "General" => "index.md",
         "Examples" => ["Getting started" => "easy_example.md",
                        "Mixed Network"   => "mixed_network.md",
-                       "Adding new nodal dynamics" => "own_nodal_dynamics.md"]]
+                       "Adding new nodal dynamics" => "own_nodal_dynamics.md",
+                       "Predefined Topology and Set-Points" => "own_topology.md"]]
 )
