@@ -17,7 +17,7 @@ function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, di
             pg_struct.cables_vec = cables_vec
 
             L = get_effective_distances(pg_struct.embedded_graph; mean_len_km = pg_struct.mean_len_km, shortest_line_km = pg_struct.shortest_line_km) # Effective spacial distances
-            Y, Y_shunt = get_line_admittance_matrix(pg_struct, L) # Update Admittances and shunts
+            Y, Y_shunt = get_line_admittance_matrix(pg_struct.embedded_graph; L_matrix = L_matrix, cables_vec = pg_struct.cables_vec, num_nodes = pg_struct.num_nodes) # Update Admittances and shunts
             pg_struct.edge_parameters = Dict(:Y => Y, :Y_shunt => Y_shunt) 
 
             lines = get_lines(pg_struct) # Update Lines
