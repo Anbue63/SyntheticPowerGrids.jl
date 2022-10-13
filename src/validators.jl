@@ -3,19 +3,12 @@
 
 Performs a variety of test to assure that the dynamical system can represent a meaningful power grid.
 """
-function validate_power_grid(pg, op, pg_struct)
-    if validate_voltage_magnitude(op) == true                             # Voltage magnitudes in the operation point
-        if validate_power_flow_on_lines(op, pg_struct) == true  # Power flow on the lines
-            #stable = test_eigenvalues(pg, op)             
+function validate_power_grid(pg::PowerGrid, op, pg_struct)
+    if validate_voltage_magnitude(op) == true                   # Voltage magnitudes in the operation point
+        if validate_power_flow_on_lines(op, pg_struct)[1] == true  # Power flow on the lines
             stable = small_signal_stability_analysis(rhs(pg), op.vec) # Operation point is linearly stable
-            if stable == true 
-                if pg_struct.slack == true
-                    if validate_slack_bus_power(pg, op) == true           # Power consumption of the slack bus
-                        return true                             # All test have been passed. The power grid can be returned
-                    end
-                else
-                    return true 
-                end
+            if stable == true
+                return true 
             end
         end
     end
@@ -62,7 +55,7 @@ function validate_power_flow_on_lines(state::State, pg_struct)
     if save_network == false
         println("The power lines are overloaded.")
     end
-    return save_network
+    return save_network, save_flow
 end
 
 """
@@ -110,7 +103,6 @@ function small_signal_stability_analysis(h::ODEFunction, eq_point, p = nothing)
 
         D = f_y * pinv(g_y) * g_x # Degradation matrix
         A_s = f_x - D             # State matrix / Reduced Jacobian (eq. 7.16 in [1])
-
         λ = eigvals(A_s) .|> real |> extrema # Eigenvalues of the reduced jacobian
     end
     if all(λ .< 0.0)
@@ -139,19 +131,4 @@ function separate_differential_constraint_eqs(M, p=nothing)
     d_idx = findall(diag(M) .== 1)
 
     return c_idx, d_idx  
-end
-
-"""
-    validate_slack_bus_power(pg, op, threshold_power = 5.0)
-
-Assures that the power consumed by slack bus is below a threshold.
-"""
-function validate_slack_bus_power(pg, op, threshold_power = 5.0)
-    slack_idx = findfirst(typeof.(pg.nodes) .== SlackAlgebraic)
-    slack_test = abs(op[slack_idx, :p]) < threshold_power
-
-    if slack_test == false
-        println("The slack bus consumes to much power.")
-    end
-    return slack_test
 end

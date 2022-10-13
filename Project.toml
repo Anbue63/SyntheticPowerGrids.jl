@@ -8,7 +8,6 @@ Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 EmbeddedGraphs = "9c1af47c-29f5-11e9-0b47-9f5334384f20"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
-KernelDensity = "5ab0869b-81aa-558d-bb23-cbf5423bbe9b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NetworkDynamics = "22e9dc34-2a0d-11e9-0de0-8588d035468b"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
@@ -19,6 +18,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 SyntheticNetworks = "249d44c8-44e3-11e9-1b59-f5895c860273"
 
 [compat]
+PowerDynamics = "3.1.2"
 julia = "1.7"
 
 [extras]
