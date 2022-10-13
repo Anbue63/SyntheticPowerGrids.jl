@@ -14,7 +14,6 @@ pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(pg_struct)
 ##
 using OrdinaryDiffEq
 using PowerDynamics
-using Plots
 
 rpg = rhs(pg)
 x0 = copy(op)
@@ -26,4 +25,5 @@ sol = solve(prob, Rodas4())
 solution1 = PowerGridSolution(sol, pg)
 
 ##
+using Plots
 plot(solution1, :, :v, legend=false)

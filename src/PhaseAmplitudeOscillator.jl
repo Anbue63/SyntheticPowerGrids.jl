@@ -98,22 +98,27 @@ function construct_vertex(nf::NormalForm)
     Y_n = nf.Y_n
 
     if x_dims == 1  # Special case of a single internal variable
-
-        @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
-        @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
-        @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
-        @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
+        @assert length(Bₓ) == x_dims "Bₓ parameter has the wrong dimension."
+        @assert length(Cₓ) == x_dims "Cₓ parameter has the wrong dimension."
+        @assert length(Gₓ) == x_dims "Gₓ parameter has the wrong dimension."
+        @assert length(Hₓ) == x_dims "Hₓ parameter has the wrong dimension."
+        @assert imag(Bₓ) == 0 "Bₓ must be real."
+        @assert imag(Cₓ) == 0 "Cₓ must be real."
+        @assert imag(Gₓ) == 0 "Gₓ must be real."
+        @assert imag(Hₓ) == 0 "Hₓ must be real."
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
             x = z[3]              # Internal Variable  
             s = u * conj(i)       # Apparent Power S = P + iQ
-            δp = real(s) - P      # active power deviation
-            δq = imag(s) - Q      # reactive power deviation
-            δv2 = abs2(u) - V^2 # Absolute squared voltage deviation
 
-        
+            # Deviations from the Setpoints
+            δp = real(s) - P      # active power
+            δq = imag(s) - Q      # reactive power
+            δv2 = abs2(u) - V^2   # Absolute squared voltage
+
+            # Normal Form Model
             dx = (Bₓ .* x + Cₓ .* δv2 + Gₓ .* δp + Hₓ .* δq)
             du = (Bᵤ  * x + Cᵤ  * δv2 + Gᵤ  * δp + Hᵤ  * δq) * u
             
@@ -130,10 +135,13 @@ function construct_vertex(nf::NormalForm)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
             s = u * conj(i)       # Apparent Power S = P + iQ
-            δp = real(s) - P      # active power deviation
-            δq = imag(s) - Q      # reactive power deviation
-            δv2 = abs2(u) - V^2 # Absolute squared voltage deviation
 
+            # Deviations from the Setpoints
+            δp = real(s) - P      # active power
+            δq = imag(s) - Q      # reactive power
+            δv2 = abs2(u) - V^2   # Absolute squared voltage
+
+            # Normal Form Model
             du = (Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
             
             # Splitting the complex parameters
@@ -142,20 +150,33 @@ function construct_vertex(nf::NormalForm)
             return nothing
         end
     elseif x_dims > 1 # Case of multiple internal variables
-        @assert length(Bₓ) == x_dims "Bₓ parameters have the wrong dimension."
+        @assert typeof(Bₓ) <: Matrix "Bₓ must be a matrix."
+        @assert all(imag(Bₓ) .== 0) "Bₓ must be real."
+        @assert size(Bₓ) == (x_dims,x_dims) "Bₓ parameters have the wrong dimension."
+        @assert typeof(Cₓ) <: Array "Cₓ must be an array."
+        @assert all(imag(Cₓ) .== 0) "Cₓ must be real."
         @assert length(Cₓ) == x_dims "Cₓ parameters have the wrong dimension."
+        @assert typeof(Gₓ) <: Array "Gₓ must be an array."
+        @assert all(imag(Gₓ) .== 0) "Gₓ must be real."
         @assert length(Gₓ) == x_dims "Gₓ parameters have the wrong dimension."
+        @assert typeof(Hₓ) <: Array "Hₓ must be an array."
+        @assert all(imag(Hₓ) .== 0) "Hₓ must be real."
         @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
+        @assert typeof(Bᵤ) <: Matrix "Bᵤ must be a matrix."
+        @assert size(Bᵤ) == (1,x_dims) "Bₓ parameters have the wrong dimension."
+
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
             x = z[3:dim]          # Internal Variables
             s = u * conj(i)       # Apparent Power S = P + iQ
-            δp = real(s) - P      # active power deviation
-            δq = imag(s) - Q      # reactive power deviation
-            δv2 = abs2(u) - V^2 # Absolute squared voltage deviation
 
-        
+            # Deviations from the Setpoints
+            δp = real(s) - P      # active power
+            δq = imag(s) - Q      # reactive power
+            δv2 = abs2(u) - V^2   # Absolute squared voltage
+
+            # Normal Form Model
             dx = (Bₓ .* x + Cₓ .* δv2 + Gₓ .* δp + Hₓ .* δq)
             du = (Bᵤ  * x + Cᵤ  * δv2 + Gᵤ  * δp + Hᵤ  * δq) * u
             
