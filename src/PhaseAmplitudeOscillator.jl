@@ -97,7 +97,29 @@ function construct_vertex(nf::NormalForm)
 
     Y_n = nf.Y_n
 
-    if x_dims == 1  # Special case of a single internal variable
+    if x_dims == 0  # Special case of no internal variable
+
+    rhs! = function (dz, z, edges, p, t)
+        i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
+        u = z[1] + z[2] * im  # Complex Voltage
+        s = u * conj(i)       # Apparent Power S = P + iQ
+
+        # Deviations from the Setpoints
+        δp = real(s) - P      # active power
+        δq = imag(s) - Q      # reactive power
+        δv2 = abs2(u) - V^2   # Absolute squared voltage
+
+        # Normal Form Model
+        du = (Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
+        
+        # Splitting the complex parameters
+        dz[1] = real(du)  
+        dz[2] = imag(du)
+        return nothing
+    end
+
+    elseif x_dims == 1  # Special case of a single internal variable
+
         @assert length(Bₓ) == x_dims "Bₓ parameter has the wrong dimension."
         @assert length(Cₓ) == x_dims "Cₓ parameter has the wrong dimension."
         @assert length(Gₓ) == x_dims "Gₓ parameter has the wrong dimension."
@@ -119,8 +141,8 @@ function construct_vertex(nf::NormalForm)
             δv2 = abs2(u) - V^2   # Absolute squared voltage
 
             # Normal Form Model
-            dx = (Bₓ .* x + Cₓ .* δv2 + Gₓ .* δp + Hₓ .* δq)
-            du = (Bᵤ  * x + Cᵤ  * δv2 + Gᵤ  * δp + Hᵤ  * δq) * u
+            dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
+            du = (Bᵤ * x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
             
             # Splitting the complex parameters
             dz[1] = real(du)  
@@ -129,27 +151,9 @@ function construct_vertex(nf::NormalForm)
 
             return nothing
         end
-    elseif x_dims == 0  # Special case of no internal variable
 
-        rhs! = function (dz, z, edges, p, t)
-            i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
-            u = z[1] + z[2] * im  # Complex Voltage
-            s = u * conj(i)       # Apparent Power S = P + iQ
-
-            # Deviations from the Setpoints
-            δp = real(s) - P      # active power
-            δq = imag(s) - Q      # reactive power
-            δv2 = abs2(u) - V^2   # Absolute squared voltage
-
-            # Normal Form Model
-            du = (Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
-            
-            # Splitting the complex parameters
-            dz[1] = real(du)  
-            dz[2] = imag(du)
-            return nothing
-        end
     elseif x_dims > 1 # Case of multiple internal variables
+
         @assert typeof(Bₓ) <: Matrix "Bₓ must be a matrix."
         @assert all(imag(Bₓ) .== 0) "Bₓ must be real."
         @assert size(Bₓ) == (x_dims,x_dims) "Bₓ parameters have the wrong dimension."
@@ -168,7 +172,7 @@ function construct_vertex(nf::NormalForm)
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im  # Complex Voltage
-            x = z[3:dim]          # Internal Variables
+            x = z[3:end]          # Internal Variables
             s = u * conj(i)       # Apparent Power S = P + iQ
 
             # Deviations from the Setpoints
@@ -177,13 +181,13 @@ function construct_vertex(nf::NormalForm)
             δv2 = abs2(u) - V^2   # Absolute squared voltage
 
             # Normal Form Model
-            dx = (Bₓ .* x + Cₓ .* δv2 + Gₓ .* δp + Hₓ .* δq)
-            du = (Bᵤ  * x + Cᵤ  * δv2 + Gᵤ  * δp + Hᵤ  * δq) * u
+            dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
+            du = (Bᵤ ⋅ x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
             
             # Splitting the complex parameters
             dz[1] = real(du)  
             dz[2] = imag(du)
-            dz[3:dim] = real(dx)
+            dz[3:end] = real(dx)
 
             return nothing
         end
