@@ -1,8 +1,7 @@
-#using Pkg
-#Pkg.activate(@__DIR__)
 using SyntheticPowerGrids
 using StatsBase
 
+# delete before publication
 ##
 nodal_parameters_a = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :τ_P => 5.0) 
 nodal_parameters_b = Dict(:τ_Q => 8.0, :K_P => 5, :K_Q => 0.1, :τ_P => 1.0) 

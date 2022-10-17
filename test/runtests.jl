@@ -7,17 +7,17 @@ using PowerDynamics
 import SyntheticPowerGrids.get_line_admittance_matrix
 
 @testset "Mixed_Network" begin
-    mixed_network_path = joinpath(@__DIR__, "..", "examples", "mixed_network.jl")
-    include(mixed_network_path)
+    path = joinpath(@__DIR__, "..", "examples", "mixed_network.jl")
+    include(path)
 
     @test length(pg.nodes) == num_nodes                                           # Correct number of nodes has been created
     @test unique(typeof.(pg.lines)) == [PiModelLine]                              # Correct line type
-    @test sort(Symbol.(unique(typeof.(pg.nodes)))) == [:NormalForm, :PQAlgebraic] # Correct Node types
+    @test sort(Symbol.(unique(typeof.(pg.nodes)))) == [:NormalForm, :PQAlgebraic, :SlackAlgebraic] # Correct Node types
 end
 
 @testset "Own_Topology" begin
-    own_topology_path = joinpath(@__DIR__, "..", "examples", "own_topology.jl")
-    include(own_topology_path)
+    path = joinpath(@__DIR__, "..", "examples", "own_topology.jl")
+    include(path)
 
     @test length(pg.nodes) == num_nodes                      # Correct number of nodes has been created
     @test length(edges(own_graph.graph)) == length(pg.lines) # Correct number of edges has been created
@@ -29,9 +29,17 @@ end
 end 
 
 @testset "Own_Nodal_Dynamics" begin
-    own_dynamics_path = joinpath(@__DIR__, "..", "examples", "own_nodal_dynamics.jl")
-    include(own_dynamics_path)
+    path = joinpath(@__DIR__, "..", "examples", "own_nodal_dynamics.jl")
+    include(path)
 
     @test unique(typeof.(pg.nodes)) == [SwingEqLVS] # Only SwingEqLVS should be created
     @test unique(typeof.(pg.lines)) == [StaticLine] # Correct Line type
+end
+
+@testset "Capacity_Expansion" begin
+    path = joinpath(@__DIR__, "..", "examples", "probabilistic_capacity_expansion.jl")
+    include(path)
+    
+    @test all(unique(pg_struct_updated.cables_vec) .> 0)
+    @test length(unique(pg_struct_updated.cables_vec)) > 1 
 end
