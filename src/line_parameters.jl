@@ -1,7 +1,8 @@
 """
     line_properties_380kV(length, ω = 2π * 50)
 
-Tabelle 5.6 Standardfreileitungen in der 220-kV- und 380-kV-Ebene 
+Standard line properties for 380kV over head lines. 
+Source: Tabelle 5.6 Standardfreileitungen in der 220-kV- und 380-kV-Ebene 
 https://www.dena.de/newsroom/publikationsdetailansicht/pub/dena-verteilnetzstudie-ausbau-und-innovationsbedarf-der-stromverteilnetze-in-deutschland-bis-2030/
 """
 function line_properties_380kV(length, cables, ω = 2π * 50)

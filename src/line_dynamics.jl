@@ -85,6 +85,11 @@ function get_lines_homogenous(pg_struct::PGGeneration, K)
     return lines
 end
 
+"""
+    line_data(pg_struct::PGGeneration)
+
+Loads relevant line data from the PGGeneration struct.
+"""
 function line_data(pg_struct::PGGeneration)
     embedded_graph = pg_struct.embedded_graph
 
