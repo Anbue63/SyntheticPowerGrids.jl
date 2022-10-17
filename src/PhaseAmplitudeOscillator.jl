@@ -171,9 +171,9 @@ function construct_vertex(nf::NormalForm)
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
-            u = z[1] + z[2] * im  # Complex Voltage
-            x = z[3:end]          # Internal Variables
-            s = u * conj(i)       # Apparent Power S = P + iQ
+            u = z[1] + z[2] * im                # Complex Voltage
+            x = [z[j] for j in 3:lastindex(z)]  # Internal Variables
+            s = u * conj(i)                     # Apparent Power S = P + iQ
 
             # Deviations from the Setpoints
             δp = real(s) - P      # active power
@@ -182,7 +182,7 @@ function construct_vertex(nf::NormalForm)
 
             # Normal Form Model
             dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
-            du = (Bᵤ ⋅ x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u
+            du = (x ⋅ Bᵤ + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u  # Switched x and Bᵤ because Julia's dot-product conjugates the first vector
             
             # Splitting the complex parameters
             dz[1] = real(du)  
