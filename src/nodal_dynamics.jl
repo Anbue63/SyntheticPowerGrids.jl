@@ -71,8 +71,8 @@ function get_DroopControlledInverterApprox(P_set::Float64, Q_set::Float64, V_set
     K_P = nodal_parameters[:K_P] # Gain constant low pass filter measuring the active power
     K_Q = nodal_parameters[:K_Q] # Gain constant low pass filter measuring the reactive power
     
-    Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims = parameter_DroopControlledInverterApprox(P_set = P_set, Q_set = Q_set, τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_set, τ_P = τ_P, Y_n = 0.0)
-    NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
+    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_DroopControlledInverterApprox(τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_set, τ_P = τ_P, Y_n = 0.0)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
 end
 
 """
@@ -86,8 +86,8 @@ function get_ThirdOrderMachineApprox(P_set::Float64, Q_set::Float64, V_set::Floa
     γ = nodal_parameters[:γ] # Damping Coefficient
 
     E_f = V_set + (X * Q_set / (V_set)) # Electric field voltage that results in the correct nodal voltage magnitude
-    Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims = parameter_ThirdOrderMachineApprox(P_m = P_set, E_f = E_f, E_set = V_set, X = X, α = α, γ = γ, Y_n = 0.0)
-    NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
+    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_ThirdOrderMachineApprox(E_f = E_f, E_set = V_set, X = X, α = α, γ = γ, Y_n = 0.0)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
 end
 
 function get_PQ(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters)
@@ -100,13 +100,12 @@ end
 Normal Form Approximation of the dispatchable virtual oscillator control.
 """
 function get_dVOCapprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
-    Ω = nodal_parameters[:Ω] # Rated Frequency
     η = nodal_parameters[:η] # positive control parameter
     α = nodal_parameters[:α] # positive control parameter
     κ = nodal_parameters[:κ] # uniform complex phase
 
-    Aᵤ, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Aₓ, Bₓ, Cₓ, Gₓ, Hₓ, Mₓ, Y_n, x_dims = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, Ω_set = Ω, η = η, α = α, κ = κ, Y_n = 0.0)
-    NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
+    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, η = η, α = α, κ = κ, Y_n = 0.0)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
 end
 
 """
@@ -117,18 +116,15 @@ General Normal Form.
 function get_normalform(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     x_dims = nodal_parameters[:x_dims] # Number of internal variables
 
-    Aᵤ = nodal_parameters[:Aᵤ] 
     Bᵤ = nodal_parameters[:Bᵤ] 
     Cᵤ = nodal_parameters[:Cᵤ] 
     Gᵤ = nodal_parameters[:Gᵤ] 
     Hᵤ = nodal_parameters[:Hᵤ] 
 
-    Aₓ = nodal_parameters[:Aₓ] 
     Bₓ = nodal_parameters[:Bₓ]  
     Cₓ = nodal_parameters[:Cₓ]  
     Gₓ = nodal_parameters[:Gₓ]  
     Hₓ = nodal_parameters[:Hₓ] 
-    Mₓ = nodal_parameters[:Mₓ] 
 
-    NormalForm(Aᵤ = Aᵤ, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Aₓ = Aₓ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, Mₓ = Mₓ, x_dims = x_dims)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
 end
