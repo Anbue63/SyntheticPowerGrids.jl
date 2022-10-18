@@ -2,10 +2,7 @@ using NetworkDynamics: ODEVertex
 import PowerDynamics: dimension, symbolsof, construct_vertex 
 import PowerDynamics: showdefinition
 
-function parameter_DroopControlledInverterApprox(;P_set, Q_set, τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
-    P = P_set
-    Q = Q_set
-    V = V_r
+function parameter_DroopControlledInverterApprox(;τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
     Bᵤ = 1im 
     Cᵤ = - 1 / (2 * τ_Q * V_r^2)
     Gᵤ = 0
@@ -16,13 +13,10 @@ function parameter_DroopControlledInverterApprox(;P_set, Q_set, τ_P, τ_Q, K_P,
     Hₓ = 0 
     x_dims = 1
 
-    return [P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
+    return [Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
 end
 
-function parameter_ThirdOrderMachineApprox(;P_set, Q_set, E_f, E_set, X, α, γ, Y_n)
-    P = P_set
-    Q = Q_set
-    V = E_set
+function parameter_ThirdOrderMachineApprox(;E_f, E_set, X, α, γ, Y_n)
     Bᵤ = 1im
     Cᵤ = (- E_f / (2E_set^3)) / α
     Gᵤ = 0.0
@@ -33,13 +27,10 @@ function parameter_ThirdOrderMachineApprox(;P_set, Q_set, E_f, E_set, X, α, γ,
     Hₓ = 0
     x_dims = 1
 
-    return [P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
+    return [Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
 end
 
 function parameter_dVOC(;P_set, Q_set, V_set, η, α, κ, Y_n)
-    P = P_set
-    Q = Q_set
-    V = V_set
     Bᵤ = nothing
     Cᵤ = - α * η / (V_set^2) + η * exp(κ * 1im) * complex(P_set, - Q_set) / (V_set^4)
     Gᵤ = - η * exp(κ * 1im) / (V_set^2)
@@ -50,7 +41,7 @@ function parameter_dVOC(;P_set, Q_set, V_set, η, α, κ, Y_n)
     Hₓ = nothing
     x_dims = 0
 
-    return [P, Q, V, Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
+    return [Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims]
 end
 
 struct NormalForm <: AbstractNode
@@ -166,13 +157,12 @@ function construct_vertex(nf::NormalForm)
         @assert typeof(Hₓ) <: Array "Hₓ must be an array."
         @assert all(imag(Hₓ) .== 0) "Hₓ must be real."
         @assert length(Hₓ) == x_dims "Hₓ parameters have the wrong dimension."
-        @assert typeof(Bᵤ) <: Matrix "Bᵤ must be a matrix."
-        @assert size(Bᵤ) == (1,x_dims) "Bₓ parameters have the wrong dimension."
+        @assert length(Bᵤ) == x_dims "Bᵤ parameters have the wrong dimension."
 
         rhs! = function (dz, z, edges, p, t)
             i = total_current(edges) + Y_n * (z[1] + z[2] * 1im) # Current, couples the NF to the rest of the network, Y_n Shunt admittance
             u = z[1] + z[2] * im                # Complex Voltage
-            x = [z[j] for j in 3:lastindex(z)]  # Internal Variables
+            x = z[3:end]                        # Internal Variables
             s = u * conj(i)                     # Apparent Power S = P + iQ
 
             # Deviations from the Setpoints
@@ -182,7 +172,7 @@ function construct_vertex(nf::NormalForm)
 
             # Normal Form Model
             dx = (Bₓ * x + Cₓ * δv2 + Gₓ * δp + Hₓ * δq)
-            du = (x ⋅ Bᵤ + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u  # Switched x and Bᵤ because Julia's dot-product conjugates the first vector
+            du = (conj(Bᵤ) ⋅ x + Cᵤ * δv2 + Gᵤ * δp + Hᵤ * δq) * u  # conj(Bᵤ) because Julia's dot-product conjugates the first vector/matrix
             
             # Splitting the complex parameters
             dz[1] = real(du)  
