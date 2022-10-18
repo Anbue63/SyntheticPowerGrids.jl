@@ -20,7 +20,6 @@ pg_struct = PGGeneration(num_nodes = 10, nodal_dynamics = dynamics)
 pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(pg_struct)
 
 ```
+The default of the grid is to generate a grid topology using [SyntheticNetworks.jl](https://github.com/PIK-ICoNe/SyntheticNetworks.jl) but it is also possible to use your own predefined topology.
 
-## ToDos
-1. Normal Form parameter calculation -> internally deal with the variation from the set points!, use set points in -> PowerModels.jl algo 
-3. Add an option without line losses
+Furthermore the default active power set points are sampled from a bimodal distribution, as explained in the paper, and the reactive power set points are calculated such that the voltage in the grid is close to 1 p.u., but here it is also possible to use predefined set-points.

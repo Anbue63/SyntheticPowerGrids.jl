@@ -1,16 +1,15 @@
-function min_max_normalize_int_array!(sum_arr, arr)
-    while sum(arr) > sum_arr
-        _, i = findmax(arr)
-        arr[i] -= 1
-    end
+"""
+    get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector{Float64}, slack::Bool, slack_idx::Int64, node_dynamics)
 
-    while sum(arr) < sum_arr
-        _, i = findmin(arr)
-        arr[i] += 1
-    end
-    nothing
-end
+Generates the nodal dynamics of the network.
 
+- `P_set::Vector{Float64}`: Active Power Set-Points
+- `Q_set::Vector{Float64}`: Reactive Power Set-Points
+- `V_set::Vector{Float64}`: Voltage Set-Points
+- `slack::Bool`: Activates or deactivates the slack bus
+- `slack_idx::Int64`: Gives the node index of the slack bus if one is used
+- `node_dynamics`: Stores all the different node dynamics. The first arg gives the share the second gives the node type and the third stores the nodal parameters
+"""
 function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector{Float64}, slack::Bool, slack_idx::Int64, node_dynamics)
     num_nodes = length(P_set)        # Number of all nodes
     node_idxs = collect(1:num_nodes) 
@@ -18,7 +17,8 @@ function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector
 
     n_nodes = [round(Int, num_nodes * nd[1]) for nd in node_dynamics] # Fraction of nodes of type `nd`
 
-    min_max_normalize_int_array!(num_nodes, n_nodes)  # Note that this can introduce nodes with weight 0. into the system.
+    # Catch rounding artifacts!
+    min_max_normalize_int_array!(num_nodes, n_nodes) # Note that this can introduce nodes with weight 0. into the system.
 
     for n_node in n_nodes # Run over node types to distribute them
         s = sample(node_idxs, n_node, replace = false) # Sample nodes (without replacement) with should have type nd
@@ -27,7 +27,6 @@ function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector
     end
 
     nodes = Array{Any}(undef, num_nodes)
-    # @assert isapprox(sum(x -> x[1], node_dynamics), 1) should go in validate pg not here!
     for (nd, idxs) in zip(node_dynamics, node_dynamics_idxs)
         for i in idxs
             nodal_parameters = nd[3]
@@ -41,6 +40,31 @@ function get_nodes(P_set::Vector{Float64}, Q_set::Vector{Float64}, V_set::Vector
     return nodes
 end
 
+"""
+    min_max_normalize_int_array!(sum_arr, arr)
+
+During the rounding the sum_arr might be unequal to sum(arr). 
+This function finds the largest / smallest entry in arr and removes / adds +1 until sum_arr = sum(arr).
+If sum(arr) == sum_arr this function does nothing
+"""
+function min_max_normalize_int_array!(sum_arr, arr)
+    while sum(arr) > sum_arr
+        _, i = findmax(arr)
+        arr[i] -= 1
+    end
+
+    while sum(arr) < sum_arr
+        _, i = findmin(arr)
+        arr[i] += 1
+    end
+    nothing
+end
+
+"""
+   get_DroopControlledInverterApprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
+
+Normal Form Approximation of a Droop Controlled Inverter.   
+"""
 function get_DroopControlledInverterApprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     τ_P = nodal_parameters[:τ_P] # Time constant low pass filter measuring the active power
     τ_Q = nodal_parameters[:τ_Q] # Time constant low pass filter measuring the reactive power
@@ -51,6 +75,11 @@ function get_DroopControlledInverterApprox(P_set::Float64, Q_set::Float64, V_set
     NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
 end
 
+"""
+    get_ThirdOrderMachineApprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
+
+Normal Form Approximation of a Third Order Machine.   
+"""
 function get_ThirdOrderMachineApprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     X = nodal_parameters[:X] # Reactance
     α = nodal_parameters[:α] # Voltage dynamics time constant
@@ -65,6 +94,11 @@ function get_PQ(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters
     PQAlgebraic(P = P_set, Q = Q_set)
 end
 
+"""
+    get_dVOCapprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
+
+Normal Form Approximation of the dispatchable virtual oscillator control.
+"""
 function get_dVOCapprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     η = nodal_parameters[:η] # positive control parameter
     α = nodal_parameters[:α] # positive control parameter
@@ -74,6 +108,11 @@ function get_dVOCapprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_pa
     NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
 end
 
+"""
+    get_normalform(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
+
+General Normal Form.
+"""
 function get_normalform(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
     x_dims = nodal_parameters[:x_dims] # Number of internal variables
 
