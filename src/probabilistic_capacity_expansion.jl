@@ -1,3 +1,13 @@
+"""
+    probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, dist_args)
+
+Performs a probabilistic capacity expansion using the following steps:
+
+1. Sample new Power Set Points from the distribution `dist_load`
+2. Calculate the load flow using PowerDynamics.jl
+3. Check the line limit using `validate_power_flow_on_lines` -> increase the capacity by adding a new cable to any overloaded line
+4. Repeat steps 1.-3. N times
+"""
 function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, dist_args)
     num_nodes = pg_struct.num_nodes
     lines = get_lines(pg_struct)
@@ -26,11 +36,16 @@ function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, di
     return pg_struct, lines
 end
 
+"""
+    consumer_producer_nodal_power(P_set, num_nodes)
+
+Generates a new load flow from the power stet points.
+"""
 function consumer_producer_nodal_power(P_set, num_nodes)
     μ = 1
     σ = 1/6
     
-    net_producer = findall(P_set .> 0.0)
+    net_producer = findall(P_set .> 0.0) 
     net_consumer = findall(P_set .< 0.0)
 
     on_peak_off_peak_factor = rand(Normal(μ, σ))

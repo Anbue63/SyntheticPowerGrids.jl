@@ -1,3 +1,8 @@
+"""
+    get_power_distribution(pg_struct)
+
+Generates the active power set points for the nodes. The default option is the bimodal distribution.
+"""
 function get_power_distribution(pg_struct)
     if pg_struct.power_distribution == :Bimodal # Bimodal Distribution for the active power
         P_vec = get_bimodal_distribution(pg_struct)
@@ -9,6 +14,13 @@ function get_power_distribution(pg_struct)
     return P_vec
 end
 
+"""
+    get_bimodal_distribution(pg_struct)
+
+Generates the active power set points for the nodes. Samples the set-points from a bimodal distribution as suggested in [1]
+
+[1] H. Taher, S. Olmi and E. Schöll, 2019, Physical Review E, 100 062306
+"""
 function get_bimodal_distribution(pg_struct)
     num_nodes = pg_struct.num_nodes                                        # Number of nodes
     P0 = pg_struct.P0
@@ -19,6 +31,12 @@ function get_bimodal_distribution(pg_struct)
     return P_vec
 end
 
+"""
+get_bimodal_distribution(pg_struct)
+
+Generates the active power set points for the nodes.
+Turns half of them into producers with P = +1 and the other half into consumers with P = -1. Often used in the theoretical physics community.
+"""
 function get_plus_minus_1_distribution(pg_struct)
     num_nodes = pg_struct.num_nodes # Number of nodes
     P_vec = ones(num_nodes)

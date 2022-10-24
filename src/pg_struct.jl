@@ -42,6 +42,11 @@
     num_tries::Int64 = 100
 end
 
+"""
+    validate_struct(pg_struct::PGGeneration)
+
+Validates the PGGeneration struct.
+"""
 function validate_struct(pg_struct::PGGeneration)
     if pg_struct.V_base != 380 * 10^3
         error("This voltage level is not supported. Please use V_base = 380 * 10^3 instead.")
