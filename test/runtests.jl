@@ -12,7 +12,7 @@ import SyntheticPowerGrids.get_line_admittance_matrix
 
     @test length(pg.nodes) == num_nodes                                           # Correct number of nodes has been created
     @test unique(typeof.(pg.lines)) == [PiModelLine]                              # Correct line type
-    @test sort(Symbol.(unique(typeof.(pg.nodes)))) == [:NormalForm, :PQAlgebraic, :SlackAlgebraic] # Correct Node types
+    @test Set(unique(typeof.(pg.nodes))) == Set([NormalForm{1}, PQAlgebraic, SlackAlgebraic]) # Correct Node types
 end
 
 @testset "Own_Topology" begin
@@ -24,7 +24,7 @@ end
 
     @test isapprox(op[:, :p], P_vec, rtol = 0.1) # Power distribution used correctly, rtol = 0.1 is the the bottleneck from power dynamics, power model uses 0.9 * P and 1.1 * P as the bounds for the power set points
 
-    @test sort(Symbol.(unique(typeof.(pg.nodes)))) == [:NormalForm, :SlackAlgebraic] # Correct Node types 
+    @test Set(unique(typeof.(pg.nodes))) == Set([NormalForm{1}, SlackAlgebraic]) # Correct Node types 
     @test unique(typeof.(pg.lines)) == [StaticLine] # Correct Line type
 end 
 
