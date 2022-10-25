@@ -18,17 +18,12 @@ module SyntheticPowerGrids
     include("line_parameters.jl")
     export get_effective_distances
     
-    include("PhaseAmplitudeOscillator.jl")
-    export parameter_DroopControlledInverterApprox
-
     include("pg_generation.jl")
     export generate_powergrid_dynamics
 
     include("validators.jl")
 
     include("operationpoint.jl")
-
-    include("fluc_node.jl")
 
     include("active_power.jl")
 

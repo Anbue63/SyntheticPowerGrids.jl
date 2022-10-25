@@ -60,6 +60,19 @@ function min_max_normalize_int_array!(sum_arr, arr)
     nothing
 end
 
+function parameter_DroopControlledInverterApprox(;τ_P, τ_Q, K_P, K_Q, V_r, Y_n)
+    Bᵤ = 1im 
+    Cᵤ = - 1 / (2 * τ_Q * V_r^2)
+    Gᵤ = 0
+    Hᵤ = - K_Q / (τ_Q * V_r)
+    Bₓ = - 1 / τ_P
+    Cₓ = 0
+    Gₓ = - K_P / τ_P
+    Hₓ = 0 
+
+    return [Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n]
+end
+
 """
    get_DroopControlledInverterApprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
 
@@ -71,8 +84,21 @@ function get_DroopControlledInverterApprox(P_set::Float64, Q_set::Float64, V_set
     K_P = nodal_parameters[:K_P] # Gain constant low pass filter measuring the active power
     K_Q = nodal_parameters[:K_Q] # Gain constant low pass filter measuring the reactive power
     
-    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_DroopControlledInverterApprox(τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_set, τ_P = τ_P, Y_n = 0.0)
-    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
+    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n = parameter_DroopControlledInverterApprox(τ_Q = τ_Q, K_P = K_P, K_Q = K_Q, V_r = V_set, τ_P = τ_P, Y_n = 0.0)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ)
+end
+
+function parameter_ThirdOrderMachineApprox(;E_f, E_set, X, α, γ, Y_n)
+    Bᵤ = 1im
+    Cᵤ = (- E_f / (2E_set^3)) / α
+    Gᵤ = 0.0
+    Hᵤ = - X / (α * (E_set)^2)
+    Bₓ = - γ
+    Cₓ = 0.0 
+    Gₓ = -1
+    Hₓ = 0
+
+    return [Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n]
 end
 
 """
@@ -86,12 +112,25 @@ function get_ThirdOrderMachineApprox(P_set::Float64, Q_set::Float64, V_set::Floa
     γ = nodal_parameters[:γ] # Damping Coefficient
 
     E_f = V_set + (X * Q_set / (V_set)) # Electric field voltage that results in the correct nodal voltage magnitude
-    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_ThirdOrderMachineApprox(E_f = E_f, E_set = V_set, X = X, α = α, γ = γ, Y_n = 0.0)
-    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
+    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n = parameter_ThirdOrderMachineApprox(E_f = E_f, E_set = V_set, X = X, α = α, γ = γ, Y_n = 0.0)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ)
 end
 
 function get_PQ(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters)
     PQAlgebraic(P = P_set, Q = Q_set)
+end
+
+function parameter_dVOC(;P_set, Q_set, V_set, η, α, κ, Y_n)
+    Bᵤ = nothing
+    Cᵤ = - α * η / (V_set^2) + η * exp(κ * 1im) * complex(P_set, - Q_set) / (V_set^4)
+    Gᵤ = - η * exp(κ * 1im) / (V_set^2)
+    Hᵤ = 1im * η * exp(κ * 1im) / (V_set^2)
+    Bₓ = nothing
+    Cₓ = nothing
+    Gₓ = nothing
+    Hₓ = nothing
+
+    return [Cᵤ, Gᵤ, Hᵤ, Y_n]
 end
 
 """
@@ -104,8 +143,8 @@ function get_dVOCapprox(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_pa
     α = nodal_parameters[:α] # positive control parameter
     κ = nodal_parameters[:κ] # uniform complex phase
 
-    Bᵤ, Cᵤ, Gᵤ, Hᵤ, Bₓ, Cₓ, Gₓ, Hₓ, Y_n, x_dims = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, η = η, α = α, κ = κ, Y_n = 0.0)
-    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
+    Cᵤ, Gᵤ, Hᵤ, Y_n = parameter_dVOC(P_set = P_set, Q_set = Q_set, V_set = V_set, η = η, α = α, κ = κ, Y_n = 0.0)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ)
 end
 
 """
@@ -114,7 +153,6 @@ end
 General Normal Form.
 """
 function get_normalform(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_parameters::Dict)
-    x_dims = nodal_parameters[:x_dims] # Number of internal variables
 
     Bᵤ = nodal_parameters[:Bᵤ] 
     Cᵤ = nodal_parameters[:Cᵤ] 
@@ -126,5 +164,5 @@ function get_normalform(P_set::Float64, Q_set::Float64, V_set::Float64, nodal_pa
     Gₓ = nodal_parameters[:Gₓ]  
     Hₓ = nodal_parameters[:Hₓ] 
 
-    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ, x_dims = x_dims)
+    NormalForm(P = P_set, Q = Q_set, V = V_set, Bᵤ = Bᵤ, Cᵤ = Cᵤ, Gᵤ = Gᵤ, Hᵤ = Hᵤ, Bₓ = Bₓ, Cₓ = Cₓ, Gₓ = Gₓ, Hₓ = Hₓ)
 end
