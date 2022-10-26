@@ -13,6 +13,12 @@ import SyntheticPowerGrids.get_line_admittance_matrix
     @test length(pg.nodes) == num_nodes                                           # Correct number of nodes has been created
     @test unique(typeof.(pg.lines)) == [PiModelLine]                              # Correct line type
     @test Set(unique(typeof.(pg.nodes))) == Set([NormalForm{1}, PQAlgebraic, SlackAlgebraic]) # Correct Node types
+
+    file = joinpath(@__DIR__,"grid.json")
+    write_powergrid(pg, file, Json)
+    pg_read = read_powergrid(file, Json)
+    @test pg_read.nodes == pg.nodes # Parsing is working correctly
+    rm(file)
 end
 
 @testset "Own_Topology" begin
