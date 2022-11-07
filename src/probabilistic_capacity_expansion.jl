@@ -35,31 +35,3 @@ function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, di
     end
     return pg_struct, lines
 end
-
-"""
-    consumer_producer_nodal_power(P_set, num_nodes)
-
-Generates a new load flow from the power stet points.
-"""
-function consumer_producer_nodal_power(P_set, num_nodes)
-    μ = 1
-    σ = 1/6
-    
-    net_producer = findall(P_set .> 0.0) 
-    net_consumer = findall(P_set .< 0.0)
-
-    on_peak_off_peak_factor = rand(Normal(μ, σ))
-    P_set_new = Vector{Float64}(undef, num_nodes)
-
-    for n in 1:num_nodes
-        if n ∈ net_consumer
-            P_set_new[n] = on_peak_off_peak_factor * P_set[n]
-        elseif n ∈ net_producer
-            P_set_new[n] = rand(Normal(μ, σ)) * P_set[n]
-        end
-    end
-
-    P_set_new .-= sum(P_set_new) / (num_nodes)  # Assure power balance  
-    
-    return P_set_new
-end
