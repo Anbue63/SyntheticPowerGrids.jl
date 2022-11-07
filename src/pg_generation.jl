@@ -27,8 +27,11 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
 
         if pg_struct.probabilistic_capacity_expansion == true # Use a probabilistic load flow to expand the capacity such that it full fills all scenarios
             if pg_struct.dist_load === nothing
-                pg_struct.dist_load = consumer_producer_nodal_power # Default leads to 
-                pg_struct.dist_args = [pg_struct.P_vec, pg_struct.num_nodes]
+                pg_struct.dist_load = get_bimodal_distribution # Default leads to 
+                k = Vector{Any}(undef, 2)
+                k[1] = pg_struct.num_nodes
+                k[2] = pg_struct.P0
+                pg_struct.dist_args = k
             end
             pg_struct, lines = probabilistic_capacity_expansion(pg_struct, pg_struct.dist_load, pg_struct.dist_args)
         else

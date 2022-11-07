@@ -1,4 +1,6 @@
 using SyntheticPowerGrids
+using SyntheticNetworks
+using Graphs
 ##
 # In this example we will use the probabilistic capacity expansion algorithm that has been introduced in the paper. 
 # For this we will generate our own topology. 
