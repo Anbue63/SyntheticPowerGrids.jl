@@ -16,7 +16,7 @@ module SyntheticPowerGrids
     export PGGeneration
 
     include("line_parameters.jl")
-    export get_effective_distances
+    export get_effective_distances, get_line_admittance_matrix
     
     include("pg_generation.jl")
     export generate_powergrid_dynamics
