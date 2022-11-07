@@ -1,16 +1,32 @@
+@with_kw mutable struct Rejections
+    total::Int64 = 0
+    voltage_magnitude::Int64 = 0
+    power_flow_on_lines::Int64 = 0
+    linearly_unstable::Int64 = 0
+end 
+
 """
     validate_power_grid(pg, op)
 
 Performs a variety of test to assure that the dynamical system can represent a meaningful power grid.
 """
-function validate_power_grid(pg::PowerGrid, op, pg_struct)
+function validate_power_grid(pg::PowerGrid, op, pg_struct, rejections)
     if validate_voltage_magnitude(op) == true                   # Voltage magnitudes in the operation point
         if validate_power_flow_on_lines(op, pg_struct)[1] == true  # Power flow on the lines
             stable = small_signal_stability_analysis(rhs(pg), op.vec) # Operation point is linearly stable
             if stable == true
-                return true 
+                return true
+            else
+                rejections.linearly_unstable += 1
+                rejections.total += 1
             end
+        else
+            rejections.power_flow_on_lines += 1
+            rejections.total += 1
         end
+    else
+        rejections.voltage_magnitude += 1
+        rejections.total += 1
     end
     println("Restarting power grid generation algorithm.")
     println("")

@@ -8,7 +8,7 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
     
     # Accessing the data from the struct
     N = pg_struct.num_nodes                              # Number of nodes
-    rejections = 0
+    rejections = Rejections()
     
     for i in 1:pg_struct.maxiters # maxiters until a stable grid is found 
         if pg_struct.embedded_graph === nothing
@@ -51,13 +51,12 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
         op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) #, solve_powerflow = true) # find operation point of the full power grid
 
         if pg_struct.validators == true # Sanity checks before returning
-            if validate_power_grid(pg, op, pg_struct) == true
+            if validate_power_grid(pg, op, pg_struct, rejections) == true
                 return pg, op, pg_struct, rejections
             end
         else
             return pg, op, pg_struct, rejections
         end
-        rejections += 1
     end
     return nothing, nothing, nothing, rejections
 end 
