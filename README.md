@@ -3,9 +3,9 @@
 A package to generate synthetic power grid dynamics that is build on top of [PowerDynamics.jl](https://github.com/JuliaEnergy/PowerDynamics.jl). 
 
 ## Installation
-You can directly add the package from our github / gitlab repository.
+You can directly add the package from our github repository.
 ```@julia
-] add https://gitlab.pik-potsdam.de/buettner/syntheticpowergrids
+] add https://github.com/Anbue63/SyntheticPowerGrids.jl
 ```
 
 ## Overview
@@ -18,9 +18,4 @@ parameters = Dict(:η => 3 * 10^(-3), :α => 5.0, :κ => π/2, :Ω => 0)
 dynamics = [(1.0, get_dVOCapprox, parameters)]
 pg_struct = PGGeneration(num_nodes = 10, nodal_dynamics = dynamics)
 pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(pg_struct)
-
 ```
-
-## ToDos
-1. Normal Form parameter calculation -> internally deal with the variation from the set points!, use set points in -> PowerModels.jl algo 
-3. Add an option without line losses
