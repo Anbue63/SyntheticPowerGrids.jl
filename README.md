@@ -5,7 +5,7 @@ A package to generate synthetic power grid dynamics that is build on top of [Pow
 ## Installation
 You can directly add the package from our github repository.
 ```@julia
-] add https://github.com/Anbue63/SyntheticPowerGrids.jl
+] add https://github.com/PIK-ICoNe/SyntheticPowerGrids.jl
 ```
 
 ## Overview
