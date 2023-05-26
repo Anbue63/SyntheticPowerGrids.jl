@@ -41,6 +41,8 @@ Calculates the power flow on the transmission lines of a grid. Checks if it is b
 function validate_power_flow_on_lines(state::State, pg_struct)
     lines = state.grid.lines
     save_flow = Vector{Bool}(undef, length(lines))
+    P = Dict()
+    P_max = Dict()
 
     for j in eachindex(lines)
         l = lines[j]
@@ -62,17 +64,23 @@ function validate_power_flow_on_lines(state::State, pg_struct)
         φ_mk = state[m, :φ] - state[k, :φ] # Phase difference
 
         P_mk = abs(v_k * v_m * b_mk * sin(φ_mk)) # Flow on the line connecting m, k
-        P_save = abs(b_mk * 0.7)                 # Save flow on the line, 70% of the physically possible level
+        
+        P_max_mk = abs(v_k * v_m * b_mk)
+        P_save = P_max_mk * 0.7 # Save flow on the line, 70% of the physically possible level
 
         save_flow[j] = P_mk < P_save
+
+        P[[k,m]] = P_mk
+        P_max[[k,m]] = P_max_mk
     end 
     save_network = all(save_flow)
 
     if save_network == false
         println("The power lines are overloaded.")
     end
-    return save_network, save_flow
+    return save_network, save_flow, P, P_max
 end
+
 
 """
     validate_voltage_magnitude(op)    

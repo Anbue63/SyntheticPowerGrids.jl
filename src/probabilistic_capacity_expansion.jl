@@ -17,7 +17,7 @@ function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, di
         P_set_prob = dist_load(dist_args...) # Sample new set points from the Distributions
 
         op_prob = get_ancillary_operationpoint(P_set_prob, pg_struct.V_vec, num_nodes, pg_struct.slack_idx, lines)
-        save_network, save_flow = validate_power_flow_on_lines(op_prob, pg_struct)
+        save_network, save_flow, _, _ = validate_power_flow_on_lines(op_prob, pg_struct)
 
         if save_network == false 
             overload_idx = findall(save_flow .== false) # Find overloaded line(s)
