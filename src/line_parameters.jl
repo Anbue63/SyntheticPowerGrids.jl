@@ -69,10 +69,13 @@ function get_effective_distances(g::EmbeddedGraph{Int64}; mean_len_km, shortest_
     for i in 1:N
         for j in 1:i-1
             len_line = dist_nodes[i,j] * dist_to_km # Euclidean distance conversion to km
-            if len_line < shortest_line_km          # SyntheticNetworks can generate very short lines. We fix this by adding a threshold to the admittance. The shortest line length is taken from SciGrids
+            if len_line == 0.0
+                L_matrix[i, j] = 0.0
+                L_matrix[j, i] = 0.0
+            elseif len_line < shortest_line_km          # SyntheticNetworks can generate very short lines. We fix this by adding a threshold to the admittance. The shortest line length is taken from SciGrids
                 L_matrix[i, j] = shortest_line_km
                 L_matrix[j, i] = shortest_line_km
-            else
+            elseif len_line > shortest_line_km
                 L_matrix[i, j] = len_line
                 L_matrix[j, i] = len_line
             end
