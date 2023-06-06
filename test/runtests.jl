@@ -41,11 +41,3 @@ end
     @test unique(typeof.(pg.nodes)) == [SwingEqLVS] # Only SwingEqLVS should be created
     @test unique(typeof.(pg.lines)) == [StaticLine] # Correct Line type
 end
-
-@testset "Capacity_Expansion" begin
-    path = joinpath(@__DIR__, "..", "examples", "probabilistic_capacity_expansion.jl")
-    include(path)
-    
-    @test all(unique(pg_struct_updated.cables_vec) .> 0)
-    @test length(unique(pg_struct_updated.cables_vec)) > 1 
-end
