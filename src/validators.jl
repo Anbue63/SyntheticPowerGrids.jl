@@ -12,7 +12,7 @@ Performs a variety of test to assure that the dynamical system can represent a m
 """
 function validate_power_grid(pg::PowerGrid, op, pg_struct, rejections)
     if validate_voltage_magnitude(op) == true                   # Voltage magnitudes in the operation point
-        if validate_power_flow_on_lines(op, pg_struct)[1] == true  # Power flow on the lines
+        if validate_power_flow_on_lines(op, pg_struct.lines)[1] == true  # Power flow on the lines
             stable = small_signal_stability_analysis(rhs(pg), op.vec) # Operation point is linearly stable
             if stable == true
                 return true
@@ -38,7 +38,7 @@ end
 
 Calculates the power flow on the transmission lines of a grid. Checks if it is below the threshold of 70% of the physical limit.
 """
-function validate_power_flow_on_lines(state::State, pg_struct)
+function validate_power_flow_on_lines(state::State, line_type)
     lines = state.grid.lines
     save_flow = Vector{Bool}(undef, length(lines))
     P = Dict()
@@ -49,11 +49,11 @@ function validate_power_flow_on_lines(state::State, pg_struct)
         m = l.from
         k = l.to
         
-        if pg_struct.lines == :StaticLine
+        if line_type == :StaticLine
             g_mk = real(l.Y) # Line Conductance
             b_mk = imag(l.Y) # Line Susceptance
             
-        elseif pg_struct.lines == :PiModelLine
+        elseif line_type == :PiModelLine
             g_mk = real(l.y) # Line Conductance
             b_mk = imag(l.y) # Line Susceptance
         end

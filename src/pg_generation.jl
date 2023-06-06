@@ -53,7 +53,7 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
         pg = PowerGrid(nodes, lines)
         ic_guess = get_initial_guess(pg, op_ancillary)
 
-        op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) #, solve_powerflow = true) # find operation point of the full power grid
+        op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) # find operation point of the full power grid
 
         if pg_struct.validators == true # Sanity checks before returning
             if validate_power_grid(pg, op, pg_struct_updated, rejections) == true
