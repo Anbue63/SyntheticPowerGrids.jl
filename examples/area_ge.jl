@@ -1,19 +1,12 @@
-using Pkg
-Pkg.activate(joinpath(@__DIR__, "../"))
-
-using Revise
 using SyntheticPowerGrids
-using PowerDynamics
 
-using OrdinaryDiffEq
 using Statistics
 import SyntheticPowerGrids.get_effective_distances
 import SyntheticPowerGrids.get_line_admittance_matrix
 using SyntheticNetworks
 using Graphs
-using Plots
 
-##
+## Compare a grid with the area of germany with our default generated grids
 area_ge = 357111 # [km²]
 a_ge = sqrt(area_ge) 
 dist_to_km = a_ge / 2
