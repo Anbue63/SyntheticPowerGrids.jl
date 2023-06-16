@@ -22,6 +22,10 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
             pg_struct_updated.P_vec = get_power_distribution(pg_struct)
         end
 
+        if pg_struct.slack_idx === nothing
+            pg_struct_updated.slack_idx = findmax(pg_struct_updated.P_vec)[2] 
+        end
+
         if pg_struct.cables_vec === nothing           # If there is no predefined number of cables use typical number for all lines
             e = edges(pg_struct_updated.embedded_graph.graph)
             pg_struct_updated.cables_vec = 3 * ones(length(e)) 
@@ -41,7 +45,7 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
         end
 
         op_ancillary = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.V_vec, pg_struct_updated.num_nodes, pg_struct_updated.slack_idx, lines)
-        
+
         pg_struct_updated.P_vec = op_ancillary[:, :p]
         pg_struct_updated.V_vec = op_ancillary[:, :v]
 
@@ -51,10 +55,12 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
 
         nodes = get_nodes(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.slack, pg_struct_updated.slack_idx, pg_struct_updated.nodal_dynamics)
         pg = PowerGrid(nodes, lines)
+
         ic_guess = get_initial_guess(pg, op_ancillary)
 
-        op = find_operationpoint(pg, ic_guess, sol_method = :rootfind) # find operation point of the full power grid
-
+        println("Searching for the operation point...")
+        op = find_operationpoint(pg, ic_guess, sol_method=:rootfind)
+            
         if pg_struct.validators == true # Sanity checks before returning
             if validate_power_grid(pg, op, pg_struct_updated, rejections) == true
                 return pg, op, pg_struct_updated, rejections
