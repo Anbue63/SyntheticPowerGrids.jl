@@ -34,7 +34,7 @@
     maxiters::Int64 = 1000; @assert maxiters > 0.0 "Maxiters has to be positive."
     validators::Bool = true
     slack::Bool = false
-    slack_idx::Int64 = num_nodes; @assert slack_idx < num_nodes + 1 "Choose a valid index for the slack bus."; @assert slack_idx > 0 "Choose a positive index for the slack bus."
+    slack_idx = nothing
     cables_vec = nothing
     probabilistic_capacity_expansion::Bool = false
     dist_load = nothing
