@@ -1,18 +1,27 @@
 """
-    get_ancillary_operationpoint(P_vec, V_vec, num_nodes, slack_idx, lines)
+    get_ancillary_operationpoint(P_vec, Q_vec, V_vec, node_types, slack_idx, lines)
 
 Get an Ancillary Power Grid with the same power flow on the lines as the full power grid.
 We use PV-Nodes to find the reactive power at the nodes with results in power grids where the voltage magnitude V is equal to the Reference voltage magnitude V_r.
 
-- `pg_struct`: Struct containing all data of the power grid
+- `P_vec`: Vector containing the nodal active powers
+- `Q_vec`: Vector containing the nodal reactive powers
+- `V_vec`: Vector containing the nodal voltage magnitudes
+- `node_types`: Vector congaing the different node type for the ancillary grid
+- `slack_idx`: Index of the slack bus in the ancillary grid
 - `lines`: Line dynamics of the power grid
 """
-function get_ancillary_operationpoint(P_vec, V_vec, num_nodes, slack_idx, lines)
+function get_ancillary_operationpoint(P_vec, Q_vec, V_vec, node_types, slack_idx, lines)
+    num_nodes = length(node_types)
     nodes = Array{Any}(undef, num_nodes)
 
     # Get Ancillary Power Grid
     for n in 1:num_nodes
-        nodes[n] = PVAlgebraic(P = P_vec[n], V = V_vec[n])
+        if node_types[n] == :PVAlgebraic
+            nodes[n] = PVAlgebraic(P = P_vec[n], V = V_vec[n])
+        elseif node_types[n] == :PQAlgebraic
+            nodes[n] = PQAlgebraic(P = P_vec[n], Q = Q_vec[n])
+        end
     end
     nodes[slack_idx] = SlackAlgebraic(U = complex(V_vec[slack_idx]))
     

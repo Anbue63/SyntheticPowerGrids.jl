@@ -19,6 +19,9 @@ own_graph = generate_graph(RandomPowerGrid(num_nodes, [1, 1/5, 3/10, 1/3, 1/10, 
 # And sample random power set-points and assure power balance:
 P_vec = rand(seed, num_nodes) 
 P_vec .-= sum(P_vec) / (num_nodes)  
+Q_vec = zeros(num_nodes)
+nodes_load_flow = fill(:PVAlgebraic, num_nodes)
+nodes_load_flow[10] = :PQAlgebraic
 
 # Then we assign the typical number of cables to each transmission line and calculate the admittances and shunts.
 # Here we use the default algorithms given by the package but generating it another way is possible as well.
@@ -33,7 +36,7 @@ nodal_parameters = Dict(:τ_Q => 5.0, :K_P => 5, :K_Q => 5, :τ_P => 5.0)
 nodal_dynamics = [(1.0, get_DroopControlledInverterApprox, nodal_parameters)]
 
 # Then we generate the struct again but use multiple new optional arguments such as `P_vec` for the active power set-points and `embedded_graph` to hand over the topology:
-pg_struct = PGGeneration(num_nodes = num_nodes, cables_vec = cables_vec, nodal_dynamics = nodal_dynamics, P_vec = P_vec, embedded_graph = own_graph, coupling = :predefined, lines = :StaticLine, slack = true, edge_parameters = edge_parameters)
+pg_struct = PGGeneration(num_nodes = num_nodes, cables_vec = cables_vec, nodal_dynamics = nodal_dynamics, Q_vec = Q_vec, P_vec = P_vec, embedded_graph = own_graph, coupling = :predefined, lines = :StaticLine, slack = true, edge_parameters = edge_parameters, node_types_ancillary = nodes_load_flow)
 
 # Finally we generate the synthetic network:
 pg, op, pg_struct_new, rejections = generate_powergrid_dynamics(pg_struct)
