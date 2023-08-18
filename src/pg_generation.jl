@@ -44,7 +44,7 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
             lines = get_lines(pg_struct_updated) # Line dynamics
         end
 
-        op_ancillary = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.V_vec, pg_struct_updated.num_nodes, pg_struct_updated.slack_idx, lines)
+        op_ancillary = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.node_types_ancillary, pg_struct_updated.slack_idx, lines)
 
         pg_struct_updated.P_vec = op_ancillary[:, :p]
         pg_struct_updated.V_vec = op_ancillary[:, :v]

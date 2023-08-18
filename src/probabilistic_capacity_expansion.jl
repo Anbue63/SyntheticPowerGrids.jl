@@ -15,8 +15,7 @@ function probabilistic_capacity_expansion(pg_struct::PGGeneration, dist_load, di
     # Run over all scenarios
     for k in 1:pg_struct.num_tries
         P_set_prob = dist_load(dist_args...) # Sample new set points from the Distributions
-
-        op_prob = get_ancillary_operationpoint(P_set_prob, pg_struct.V_vec, num_nodes, pg_struct.slack_idx, lines)
+        op_prob = get_ancillary_operationpoint(P_set_prob, pg_struct.Q_vec, pg_struct.V_vec, pg_struct.node_types_ancillary, pg_struct.slack_idx, lines)
         save_network, save_flow, _, _ = validate_power_flow_on_lines(op_prob, pg_struct.lines)
 
         if save_network == false 

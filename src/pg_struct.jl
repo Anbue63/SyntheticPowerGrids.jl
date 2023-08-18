@@ -16,6 +16,7 @@
     num_nodes::Int64; @assert num_nodes > 0.0 "Number of nodes can not be negative."
     nodal_dynamics::Vector{Tuple{Float64, Function, Any}}
     @assert sum(map(nd -> nodal_dynamics[nd][1], 1:length(nodal_dynamics))) == 1.0 "The sum of all nodal share has to equal 1.0!"
+    node_types_ancillary = fill(:PVAlgebraic, num_nodes); @assert length(node_types_ancillary) == num_nodes "Give a type of node for the load flow initialization for each node."
 
     # Power 
     power_distribution::Symbol = :Bimodal;
@@ -54,6 +55,10 @@ function validate_struct(pg_struct::PGGeneration)
 
     if pg_struct.power_distribution != :Bimodal && pg_struct.power_distribution != :Plus_Minus_1
         error("This option for the power distribution is not supported. Please use power_distribution = :Bimodal or :Plus_Minus_1 instead.")
+    end
+
+    if pg_struct.node_types_ancillary != :PVAlgebraic && pg_struct.node_types_ancillary != :PQAlgebraic
+        error("This node option for the load flow initialization is not supported. Please use either :PVAlgebraic or :PQAlgebraic.")
     end
 
     if pg_struct.power_distribution == :Plus_Minus_1
