@@ -57,7 +57,14 @@ function validate_struct(pg_struct::PGGeneration)
         error("This option for the power distribution is not supported. Please use power_distribution = :Bimodal or :Plus_Minus_1 instead.")
     end
 
-    if pg_struct.node_types_ancillary != :PVAlgebraic && pg_struct.node_types_ancillary != :PQAlgebraic
+    nodes_load_flow = copy(pg_struct.node_types_ancillary)
+    pq_idx = findall(nodes_load_flow.== :PQAlgebraic)
+    deleteat!(nodes_load_flow, pq_idx)
+
+    pv_idx = findall(nodes_load_flow.== :PVAlgebraic)
+    deleteat!(nodes_load_flow, pv_idx)
+
+    if !isempty(nodes_load_flow)
         error("This node option for the load flow initialization is not supported. Please use either :PVAlgebraic or :PQAlgebraic.")
     end
 
