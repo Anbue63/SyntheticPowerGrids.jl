@@ -11,7 +11,7 @@ We use PV-Nodes to find the reactive power at the nodes with results in power gr
 - `slack_idx`: Index of the slack bus in the ancillary grid
 - `lines`: Line dynamics of the power grid
 """
-function get_ancillary_operationpoint(P_vec, Q_vec, V_vec, node_types, slack_idx, lines, rejections)
+function get_ancillary_operationpoint(P_vec, Q_vec, V_vec, node_types, slack_idx, lines)
     num_nodes = length(node_types)
     nodes = Array{Any}(undef, num_nodes)
 
@@ -26,17 +26,8 @@ function get_ancillary_operationpoint(P_vec, Q_vec, V_vec, node_types, slack_idx
     nodes[slack_idx] = SlackAlgebraic(U = complex(V_vec[slack_idx]))
     
     pg_cons = PowerGrid(nodes, lines)
-
-    try 
-        op = find_operationpoint(pg_cons, sol_method=:rootfind, solve_powerflow = true)
-        return op, rejections
-    catch
-        println("Could not find the operation point. Problem unfeasible.")
-        rejections.unfeasible += 1
-        rejections.total += 1
-    
-        return nothing, rejections
-    end
+    op = find_operationpoint(pg_cons, sol_method=:rootfind, solve_powerflow = true)
+    return op
 end
 
 """

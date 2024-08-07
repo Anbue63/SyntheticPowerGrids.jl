@@ -44,30 +44,26 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
             lines = get_lines(pg_struct_updated) # Line dynamics
         end
 
-        op_ancillary, rejections = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.node_types_ancillary, pg_struct_updated.slack_idx, lines, rejections)
+        op_ancillary = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.node_types_ancillary, pg_struct_updated.slack_idx, lines)
 
-        if op_ancillary === nothing
-            continue
-        else
-            pg_struct_updated.P_vec = op_ancillary[:, :p]
-            pg_struct_updated.V_vec = op_ancillary[:, :v]
-            pg_struct_updated.Q_vec = op_ancillary[:, :q] # Reactive Power of the ancillary power grid
+        pg_struct_updated.P_vec = op_ancillary[:, :p]
+        pg_struct_updated.V_vec = op_ancillary[:, :v]
+        pg_struct_updated.Q_vec = op_ancillary[:, :q] # Reactive Power of the ancillary power grid
 
-            nodes = get_nodes(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.slack, pg_struct_updated.slack_idx, pg_struct_updated.nodal_dynamics)
-            pg = PowerGrid(nodes, lines)
+        nodes = get_nodes(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.slack, pg_struct_updated.slack_idx, pg_struct_updated.nodal_dynamics)
+        pg = PowerGrid(nodes, lines)
 
-            ic_guess = get_initial_guess(pg, op_ancillary)
+        ic_guess = get_initial_guess(pg, op_ancillary)
 
-            println("Searching for the operation point...")
-            op = find_operationpoint(pg, ic_guess, sol_method=:rootfind)
-                
-            if pg_struct.validators == true # Sanity checks before returning
-                if validate_power_grid(pg, op, pg_struct_updated, rejections) == true
-                    return pg, op, pg_struct_updated, rejections
-                end
-            else
+        println("Searching for the operation point...")
+        op = find_operationpoint(pg, ic_guess, sol_method=:rootfind)
+            
+        if pg_struct.validators == true # Sanity checks before returning
+            if validate_power_grid(pg, op, pg_struct_updated, rejections) == true
                 return pg, op, pg_struct_updated, rejections
             end
+        else
+            return pg, op, pg_struct_updated, rejections
         end
     end
     return nothing, nothing, nothing, rejections
