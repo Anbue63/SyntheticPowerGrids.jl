@@ -3,6 +3,7 @@
     voltage_magnitude::Int64 = 0
     power_flow_on_lines::Int64 = 0
     linearly_unstable::Int64 = 0
+    unfeasible::Int64 = 0
 end 
 
 """
