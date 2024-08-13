@@ -43,8 +43,14 @@ function generate_powergrid_dynamics(pg_struct::PGGeneration)
         else
             lines = get_lines(pg_struct_updated) # Line dynamics
         end
-
-        op_ancillary, rejections = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.node_types_ancillary, pg_struct_updated.slack_idx, lines, rejections)
+        if pg_struct.use_static_lines_for_helper_grid == false
+            op_ancillary, rejections = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.node_types_ancillary, pg_struct_updated.slack_idx, lines, rejections)
+        else
+            pg_struct_helper_static_lines = deepcopy(pg_struct_updated)
+            pg_struct_helper_static_lines.lines = :StaticLine
+            lines_helper = get_lines(pg_struct_helper_static_lines)
+            op_ancillary, rejections = get_ancillary_operationpoint(pg_struct_updated.P_vec, pg_struct_updated.Q_vec, pg_struct_updated.V_vec, pg_struct_updated.node_types_ancillary, pg_struct_updated.slack_idx, lines_helper, rejections)
+        end
 
         if op_ancillary === nothing
             continue

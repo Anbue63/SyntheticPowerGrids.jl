@@ -41,6 +41,7 @@
     dist_load = nothing
     dist_args = nothing
     num_tries::Int64 = 100
+    use_static_lines_for_helper_grid::Bool = false
 end
 
 """
